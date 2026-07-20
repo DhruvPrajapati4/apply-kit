@@ -1,8 +1,9 @@
 # macOS
 .DS_Store
 
-# Claude Code local settings (machine-specific)
+# Claude Code local settings and working guidance (machine-specific, local-only)
 .claude/settings.local.json
+CLAUDE.md
 
 # Your private data (never commit) - provide your own locally
 resume/
