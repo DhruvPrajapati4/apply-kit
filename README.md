@@ -105,14 +105,15 @@ example `/resume-fit-report` to just get a gap analysis.
 
 ## Roadmap
 
-- Scoped subagents per pipeline stage, and guardrail-enforcing hooks (block
-  committing personal data, enforce the one-page rule).
 - Accept a resume pasted as DOCX / PDF / plain LaTeX instead of assuming a fixed
   master path.
-- Bundle the `humanize-text` skill so generated prose ships human-clean.
+- A "Using apply-kit from the Agent SDK" guide so the same pipeline can run
+  outside Claude Code.
 
-In progress: packaged as an installable Claude Code plugin with a marketplace
-entry (see Install above).
+Done: packaged as an installable Claude Code plugin with a marketplace entry;
+scoped subagents per pipeline stage; guardrail-enforcing hooks (block committing
+personal data, block resume content in web requests, enforce the one-page rule);
+bundled `humanize-text` so generated prose ships human-clean.
 
 Done: safety guardrails for public use (prompt-injection resistance, no
 fabrication, private data handling, no instruction leaking) — see

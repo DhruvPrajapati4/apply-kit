@@ -57,4 +57,4 @@ this if only tectonic is available.
   meaning of a bullet to make it compile.
 - **Keep outputs private** — PDFs land in the scratchpad or the git-ignored
   `applications/` folder, never committed. See
-  [`GUARDRAILS.md`](../../../GUARDRAILS.md).
+  [`GUARDRAILS.md`](../../GUARDRAILS.md).
