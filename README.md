@@ -51,13 +51,30 @@ you can run the whole thing or any single step.
   - No local install? You can still use the tailored `.tex` on
     [Overleaf](https://overleaf.com).
 
+## Install
+
+apply-kit is a Claude Code plugin. From Claude Code:
+
+```
+/plugin marketplace add DhruvPrajapati4/apply-kit
+/plugin install apply-kit@apply-kit
+```
+
+This registers the repo as a marketplace and installs the plugin (skills, and,
+as they land, agents and hooks). To iterate on the plugin locally, add the local
+checkout as a marketplace instead:
+
+```
+/plugin marketplace add /path/to/apply-kit
+/plugin install apply-kit@apply-kit
+```
+
 ## Setup
 
-1. Copy the `.claude/skills/` directory into your resume project so Claude Code
-   picks the skills up (project-scoped skills live under `.claude/skills/`).
-2. Put your master LaTeX resume at `resume/main.tex` (this path is git-ignored so
-   your resume never gets committed). The skills are tuned for Jake's Resume
-   Template but work with any single-file `.tex`.
+1. Install the plugin (above).
+2. Put your master LaTeX resume at `resume/main.tex` in your resume project (this
+   path is git-ignored so your resume never gets committed). The skills are tuned
+   for Jake's Resume Template but work with any single-file `.tex`.
 3. Optional: mark reserve bullets. Any commented-out `\resumeItem{...}` line is
    treated as a real, pre-approved accomplishment held in reserve that tailoring
    may swap in when a job makes it more relevant.
@@ -82,9 +99,14 @@ example `/resume-fit-report` to just get a gap analysis.
 
 ## Roadmap
 
+- Scoped subagents per pipeline stage, and guardrail-enforcing hooks (block
+  committing personal data, enforce the one-page rule).
 - Accept a resume pasted as DOCX / PDF / plain LaTeX instead of assuming a fixed
   master path.
-- Package as an installable Claude Code plugin with a marketplace entry.
+- Bundle the `humanize-text` skill so generated prose ships human-clean.
+
+In progress: packaged as an installable Claude Code plugin with a marketplace
+entry (see Install above).
 
 Done: safety guardrails for public use (prompt-injection resistance, no
 fabrication, private data handling, no instruction leaking) — see

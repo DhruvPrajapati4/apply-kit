@@ -23,7 +23,10 @@ the user submits should come from pdflatex/latexmk (or Overleaf). Tell the user
 this if only tectonic is available.
 
 ## Procedure
-1. Run the bundled `scripts/render.sh <tex-file>`. It:
+1. Run the bundled render script, `"${CLAUDE_SKILL_DIR}/scripts/render.sh" <tex-file>`
+   (when installed as a plugin, `${CLAUDE_SKILL_DIR}` resolves to this skill's
+   directory; if that variable is unset, fall back to `scripts/render.sh` relative
+   to this skill). It:
    - detects `latexmk` (preferred, faithful), else `tectonic` (preview-only,
      see fidelity note), else `pdflatex`/`xelatex`;
    - for tectonic, compiles a shimmed throwaway copy; other engines use the file as-is;
