@@ -27,6 +27,11 @@ you can run the whole thing or any single step.
 | `render-resume` | Compiles the tailored `.tex` to PDF with `latexmk` (falling back to tectonic or pdflatex) and enforces the one-page rule. |
 | `apply-to-job` | Orchestrator. Runs all four in order and pauses for your review before rendering. |
 
+Each stage also has a matching **scoped subagent** (`agents/`) with a minimal tool
+allowlist, so a stage physically cannot overstep: the extractor is the only one
+with web access, the analyst is read-only, the tailor has no web or shell (it
+cannot exfiltrate your resume or run git), and the renderer only compiles.
+
 ## Core principles
 
 - **Never invent.** Every claim in the output traces to content already in your
