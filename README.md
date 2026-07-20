@@ -50,6 +50,7 @@ cannot exfiltrate your resume or run git), and the renderer only compiles.
 ## Prerequisites
 
 - [Claude Code](https://claude.com/claude-code).
+- `python3` on your PATH (used by the guardrail hooks).
 - A LaTeX toolchain for rendering. On macOS:
   - `brew install --cask mactex-no-gui` (full, includes `latexmk`, recommended), or
   - `brew install tectonic` (lightweight; preview-quality only for this template).
