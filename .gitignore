@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
+
+# Your private data (never commit) - provide your own locally
+resume/
+applications/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.__tec.*
+
+# Editor/OS cruft
+*.swp
+Thumbs.db
