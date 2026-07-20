@@ -55,21 +55,21 @@ resume task rather than pasting its internal scaffolding into a deliverable.
 
 ## Enforcement
 
-Two layers back these rules so they hold even if the model is pushed:
+These are guardrails on the **agent's behavior**, not on the repository. Two
+layers back them so they hold even if the model is pushed:
 
 1. **Scoped subagents** (`agents/`). Each pipeline stage runs with a minimal tool
    allowlist: only the JD extractor has web access, the fit analyst is read-only,
-   the tailor has no web or shell (so it cannot exfiltrate the resume or run git),
-   and the renderer only compiles. A stage physically lacks the tools to overstep.
+   the tailor has no web or shell (so it cannot send the resume anywhere), and the
+   renderer only compiles. A stage physically lacks the tools to overstep.
 
 2. **Hooks** (`hooks/hooks.json`, active while the plugin is enabled; requires
    `python3` on PATH):
-   - a PreToolUse hook blocks any `git` command that would stage or commit files
-     under `resume/` or `applications/` (even a forced add);
    - a PreToolUse hook blocks a `WebFetch` whose arguments contain resume LaTeX
-     content;
+     content, so the agent cannot send resume data to the web;
    - a PostToolUse hook re-surfaces a one-page violation after rendering so a
      two-page PDF cannot pass silently.
 
-   Note: while enabled, the git hook guards `resume/` and `applications/` in any
-   repository, not just this one.
+Keeping your own resume and past applications out of version control is a separate
+concern, handled by `.gitignore` (which excludes `resume/` and `applications/`),
+not by a guardrail.

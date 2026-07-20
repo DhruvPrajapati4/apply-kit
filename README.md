@@ -111,9 +111,9 @@ example `/resume-fit-report` to just get a gap analysis.
   outside Claude Code.
 
 Done: packaged as an installable Claude Code plugin with a marketplace entry;
-scoped subagents per pipeline stage; guardrail-enforcing hooks (block committing
-personal data, block resume content in web requests, enforce the one-page rule);
-bundled `humanize-text` so generated prose ships human-clean.
+scoped subagents per pipeline stage; guardrail-enforcing hooks (block resume
+content in web requests, enforce the one-page rule); bundled `humanize-text` so
+generated prose ships human-clean.
 
 Done: safety guardrails for public use (prompt-injection resistance, no
 fabrication, private data handling, no instruction leaking) — see
