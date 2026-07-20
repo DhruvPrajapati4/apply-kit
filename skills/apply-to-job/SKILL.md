@@ -15,6 +15,7 @@ skills in order; each writes its artifact to the session scratchpad.
 Each stage has a matching subagent with a deliberately narrow tool allowlist, so a
 stage cannot overstep even if pushed (defense-in-depth behind the guardrails).
 Prefer dispatching each step to its subagent:
+- step 0 → `resume-ingestor` (reads a resume file, no web)
 - step 1 → `jd-extractor` (web access, no editing/shell)
 - step 2 → `fit-analyst` (read-only, no web)
 - step 3 → `resume-tailor` (edit scratchpad only, no web, no shell)
@@ -23,12 +24,15 @@ Prefer dispatching each step to its subagent:
 Running the skills inline is also fine; the subagents exist to enforce tool scope.
 
 ## Pipeline
+0. **ingest-resume** (when the user provides a resume file, or no working master is
+   set yet) → `master.tex` + `ingest-report.md`. Surface any missing/thin required
+   sections before continuing. Skip if a master resume is already in place.
 1. **extract-jd** → `jd-brief.md`. If a URL is blocked, ask the user to paste the JD.
 2. **resume-fit-report** → `fit-report.md`. Show the overall fit line.
    - If fit is **Weak**, surface that honestly and ask whether to continue before
      spending effort tailoring.
 3. **tailor-resume** → `tailored.tex` + change log. **Pause here:** show the diff
-   against `./resume/main.tex` and the change log, and let the user approve or
+   against the working master and the change log, and let the user approve or
    request edits before rendering.
 4. **render-resume** → `tailored.pdf`. If it reports the resume overflowed to more
    than one page, go back to `tailor-resume`, condense, and re-render until it is
@@ -38,7 +42,7 @@ Running the skills inline is also fine; the subagents exist to enforce tool scop
 ## Principles
 - Faithfulness is inherited from `tailor-resume`: never invent; genuine gaps live
   in the fit report only.
-- The master `./resume/main.tex` is never modified — all work is on the scratchpad copy.
+- The master resume is never modified — all work is on the scratchpad copy.
 - Keep the user in the loop at step 3; don't render silently.
 
 ## Output summary

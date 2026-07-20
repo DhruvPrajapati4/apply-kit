@@ -10,8 +10,9 @@ This skill **reads and judges only** — it does not edit LaTeX and never fabric
 
 ## Inputs
 - `jd-brief.md` (from `extract-jd`; if absent, run `extract-jd` first or ask for the JD).
-- The master resume: `./resume/main.tex` (default). Parse both active and
-  commented-out `\resumeItem` lines — commented bullets are real, pre-approved
+- The master resume: the working master from `ingest-resume` (scratchpad
+  `master.tex`) if present, otherwise `./resume/main.tex`. Parse both active and
+  commented-out bullet lines — commented bullets are real, pre-approved
   accomplishments held in reserve.
 
 ## Procedure

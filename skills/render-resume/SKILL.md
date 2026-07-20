@@ -9,8 +9,9 @@ Compile a resume `.tex` (default: the scratchpad `tailored.tex`) to PDF.
 Deterministic — no tailoring decisions happen here.
 
 ## Input
-- Path to a `.tex` (default: `tailored.tex` in the scratchpad; falls back to
-  `./resume/main.tex` if asked to render the master).
+- Path to a `.tex` (default: `tailored.tex` in the scratchpad; falls back to the
+  working master, `master.tex` in the scratchpad or `./resume/main.tex`, if asked
+  to render the master).
 
 ## Engine fidelity — important
 This resume is authored for **pdfLaTeX** (`\pdfgentounicode` for ATS + `roboto`

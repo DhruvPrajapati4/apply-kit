@@ -1,6 +1,6 @@
 ---
 name: tailor-resume
-description: Produce a faithfully tailored copy of the user's LaTeX resume for a specific job, written to the scratchpad, leaving the master untouched. Use whenever the user wants to tailor, customize, adapt, rework, gear, or update their resume for a particular job, role, or JD — including loose phrasings like "make my resume fit this" or "point my resume at this posting". Applies Jake's-template-aware edits: reorders and rephrases existing content to mirror the JD's keywords, surfaces reserve (commented-out) bullets, trims to one page, and never invents skills, metrics, or experience.
+description: Produce a faithfully tailored copy of the user's LaTeX resume for a specific job, written to the scratchpad, leaving the master untouched. Use whenever the user wants to tailor, customize, adapt, rework, gear, or update their resume for a particular job, role, or JD — including loose phrasings like "make my resume fit this" or "point my resume at this posting". Works within whatever template the resume already uses (imposes no template of its own): reorders and rephrases existing content to mirror the JD's keywords, surfaces reserve (commented-out) bullets, trims to one page, and never invents skills, metrics, or experience.
 ---
 
 # tailor-resume
@@ -9,13 +9,15 @@ Create a job-specific version of the resume by editing a **copy** of the master
 `.tex`. The master is never modified. Faithfulness is the hard constraint.
 
 ## Inputs
-- Master resume: `./resume/main.tex` (default).
+- The master resume. Use the working master produced by `ingest-resume` in the
+  scratchpad if present (the user's own `.tex`, or LaTeX converted from their
+  `.docx`); otherwise fall back to `./resume/main.tex`.
 - `jd-brief.md` (from `extract-jd`) and optionally `fit-report.md`
   (from `resume-fit-report`). If neither exists, get the JD first.
 
 ## Setup
-1. Copy `./resume/main.tex` to the session scratchpad as `tailored.tex`. All edits
-   happen there.
+1. Copy the master to the session scratchpad as `tailored.tex`. All edits happen
+   there; the master is never modified.
 
 ## The one rule: never invent
 Every claim in the output must trace to content already in `main.tex` (active or
@@ -24,9 +26,9 @@ commented). You MAY:
 - rephrase existing bullets to mirror the JD's exact terminology/keywords, as long
   as the underlying fact (tech, metric, outcome) is unchanged;
 - drop the least-relevant bullets to preserve one page;
-- **uncomment reserve bullets** (commented `\resumeItem` lines, e.g. the Scalable
-  Lists Service bullet) when the JD makes them more relevant than an active bullet
-  — comment the displaced one back out so nothing is lost.
+- **uncomment reserve bullets** (any commented-out bullet lines the resume keeps in
+  reserve) when the JD makes them more relevant than an active bullet — comment the
+  displaced one back out so nothing is lost.
 
 You MAY NOT: add a skill/tool/metric/employer/project not already present; inflate
 numbers; claim seniority or scope the resume doesn't support. Genuine gaps stay in
@@ -39,15 +41,23 @@ resume doesn't support, don't. Explain that it belongs in the fit report as a
 genuine gap, and that if the experience is real, the user should add it to their
 master `main.tex` themselves — then it becomes fair game to surface.
 
-## Template rules (this resume = Jake's template)
+## Template rules (match the resume's own template)
+apply-kit imposes no template of its own. The user's resume defines its template;
+your job is to edit within it, never to restyle it.
+- **First, learn the template.** Read the whole file and identify how it is built:
+  its document class, preamble, any custom macros, and how it expresses a bullet, a
+  role/heading, and a section — whether that is Jake's `\resumeItem`-style macros, a
+  plain `\item`, a custom command, or something else entirely.
 - **Do not touch the preamble** (everything before `\begin{document}`), the custom
   macros, margins, or fonts. Edit only content between `\begin{document}` and
   `\end{document}`.
-- Reuse existing macros exactly: `\resumeItem{...}`, `\resumeSubheading{4 args}`,
-  `\resumeSubSubheading{2}`, `\resumeProjectHeading{2}`,
-  `\resumeItemListStart/End`, `\resumeSubHeadingListStart/End`.
-- Preserve `\textbf{...}` emphasis on metrics/keywords; add bold to a newly
-  surfaced JD keyword only if the fact is already there.
+- **Reuse the resume's own markup exactly.** Add or move a bullet with the same
+  command and argument shape the resume already uses for bullets; likewise for
+  headings and sections. Never introduce a different structural style than the one
+  already in the file.
+- Preserve existing emphasis markup (e.g. `\textbf{...}`) on metrics/keywords; add
+  emphasis to a newly surfaced JD keyword only if the fact is already there and the
+  resume already emphasizes similar terms.
 - Escape LaTeX specials in any rephrased text: `& % $ # _ { } ~ ^ \`.
 - **Keep it one page — this is a hard rule.** The master already fills exactly one
   page, so treat length as a fixed budget: every bullet you surface or lengthen must
@@ -56,8 +66,8 @@ master `main.tex` themselves — then it becomes fair game to surface.
   if that happens, condense (tighten wording, drop the least-relevant bullet) and
   re-render until it reports one page. A slightly shorter one-page resume always
   beats a two-page one.
-- Keep the Technical Skills block intact but reorder within each line so
-  JD-relevant tech leads. Do not add tech that isn't already listed.
+- Keep the skills/technical section intact but reorder within it so JD-relevant
+  items lead. Do not add anything that isn't already listed.
 
 ## Output
 - `tailored.tex` in the scratchpad.
