@@ -21,11 +21,12 @@ you can run the whole thing or any single step.
 
 | Skill | What it does |
 |---|---|
+| `ingest-resume` | Takes your own resume file (`.tex` or `.docx`) as the working master in your own template, and checks it has the sections a software-engineering resume needs. Polishes an existing resume; never authors one or invents missing sections. |
 | `extract-jd` | Fetches a job URL (or takes pasted text) and normalizes it into a structured brief: role, seniority, must-haves, and verbatim ATS keywords. |
 | `resume-fit-report` | Read-only. Scores how well your master resume matches the JD and separates presentation gaps (fixable) from genuine gaps (never invented). |
 | `tailor-resume` | Copies your master `.tex` to the scratchpad and applies faithful, template-aware edits: reorders and rephrases to hit the JD's keywords, surfaces reserve bullets, trims to one page. |
 | `render-resume` | Compiles the tailored `.tex` to PDF with `latexmk` (falling back to tectonic or pdflatex) and enforces the one-page rule. |
-| `apply-to-job` | Orchestrator. Runs all four in order and pauses for your review before rendering. |
+| `apply-to-job` | Orchestrator. Runs the stages in order and pauses for your review before rendering. |
 
 Each stage also has a matching **scoped subagent** (`agents/`) with a minimal tool
 allowlist, so a stage physically cannot overstep: the extractor is the only one
@@ -51,6 +52,8 @@ cannot exfiltrate your resume or run git), and the renderer only compiles.
 
 - [Claude Code](https://claude.com/claude-code).
 - `python3` on your PATH (used by the guardrail hooks).
+- `pandoc` if you want to ingest a `.docx` resume (`brew install pandoc`).
+  Not needed if your resume is already `.tex`.
 - A LaTeX toolchain for rendering. On macOS:
   - `brew install --cask mactex-no-gui` (full, includes `latexmk`, recommended), or
   - `brew install tectonic` (lightweight; preview-quality only for this template).
@@ -78,12 +81,14 @@ checkout as a marketplace instead:
 ## Setup
 
 1. Install the plugin (above).
-2. Put your master LaTeX resume at `resume/main.tex` in your resume project (this
-   path is git-ignored so your resume never gets committed). The skills are tuned
-   for Jake's Resume Template but work with any single-file `.tex`.
-3. Optional: mark reserve bullets. Any commented-out `\resumeItem{...}` line is
-   treated as a real, pre-approved accomplishment held in reserve that tailoring
-   may swap in when a job makes it more relevant.
+2. Bring your own resume. Either point `ingest-resume` at a `.tex` or `.docx`
+   file, or put a master LaTeX resume at `resume/main.tex` in your resume project
+   (this path is git-ignored so your resume never gets committed). apply-kit works
+   within whatever template your resume already uses; it has no house template of
+   its own.
+3. Optional: mark reserve bullets. Any commented-out bullet line is treated as a
+   real, pre-approved accomplishment held in reserve that tailoring may swap in
+   when a job makes it more relevant.
 
 ## Usage
 
@@ -105,15 +110,16 @@ example `/resume-fit-report` to just get a gap analysis.
 
 ## Roadmap
 
-- Accept a resume pasted as DOCX / PDF / plain LaTeX instead of assuming a fixed
-  master path.
+- PDF resume ingest (best-effort: a PDF has no layout structure to preserve, so
+  this can keep content and section order but not reproduce the original design).
 - A "Using apply-kit from the Agent SDK" guide so the same pipeline can run
   outside Claude Code.
 
 Done: packaged as an installable Claude Code plugin with a marketplace entry;
 scoped subagents per pipeline stage; guardrail-enforcing hooks (block resume
 content in web requests, enforce the one-page rule); bundled `humanize-text` so
-generated prose ships human-clean.
+generated prose ships human-clean; generic resume input for `.tex` and `.docx`
+with a software-engineering section-completeness check.
 
 Done: safety guardrails for public use (prompt-injection resistance, no
 fabrication, private data handling, no instruction leaking) — see
