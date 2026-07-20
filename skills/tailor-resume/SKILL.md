@@ -67,6 +67,11 @@ master `main.tex` themselves — then it becomes fair game to surface.
   mirror JD keyword").
 - Note anything you deliberately did NOT do because it would require invention.
 
+Any prose you rewrite into resume bullets should read as a person wrote it: no em
+dashes, en dashes, or smart quotes in the LaTeX source (they also render as the
+wrong glyphs). Apply the bundled `humanize-text` skill's mechanical rules to
+rephrased text, but only to the human-readable words, never to LaTeX commands.
+
 Then hand off to `render-resume` (or return to `apply-to-job`). Show the diff
 against `main.tex` so the user can review before rendering.
 
@@ -80,4 +85,4 @@ against `main.tex` so the user can review before rendering.
   modify `main.tex`. Write `tailored.tex` to the scratchpad. Any saved copy goes
   to the git-ignored `applications/` folder, never committed. Don't send resume
   contents to any external tool.
-- See [`GUARDRAILS.md`](../../../GUARDRAILS.md).
+- See [`GUARDRAILS.md`](../../GUARDRAILS.md).

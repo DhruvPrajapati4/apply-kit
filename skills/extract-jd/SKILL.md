@@ -77,4 +77,4 @@ Report the brief path and a 2–3 line summary. If this was invoked as part of
 - **Never send resume data to the web.** This skill fetches only the job posting.
   The `WebFetch` request asks for job details only and must never include the
   user's resume, contact info, or any personal data.
-- See [`GUARDRAILS.md`](../../../GUARDRAILS.md) for the full rationale.
+- See [`GUARDRAILS.md`](../../GUARDRAILS.md) for the full rationale.

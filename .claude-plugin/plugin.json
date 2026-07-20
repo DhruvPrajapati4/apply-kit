@@ -1,0 +1,13 @@
+{
+  "name": "apply-kit",
+  "displayName": "apply-kit",
+  "version": "0.1.0",
+  "description": "Faithfully tailor your LaTeX resume to a job posting and render a one-page PDF. Skills for extracting a JD, checking fit, tailoring, and rendering, with safety guardrails.",
+  "author": {
+    "name": "Dhruv Prajapati",
+    "url": "https://github.com/DhruvPrajapati4"
+  },
+  "homepage": "https://github.com/DhruvPrajapati4/apply-kit",
+  "repository": "https://github.com/DhruvPrajapati4/apply-kit",
+  "keywords": ["resume", "cv", "job-application", "latex", "tailoring", "ats"]
+}

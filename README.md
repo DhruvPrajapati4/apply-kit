@@ -27,6 +27,11 @@ you can run the whole thing or any single step.
 | `render-resume` | Compiles the tailored `.tex` to PDF with `latexmk` (falling back to tectonic or pdflatex) and enforces the one-page rule. |
 | `apply-to-job` | Orchestrator. Runs all four in order and pauses for your review before rendering. |
 
+Each stage also has a matching **scoped subagent** (`agents/`) with a minimal tool
+allowlist, so a stage physically cannot overstep: the extractor is the only one
+with web access, the analyst is read-only, the tailor has no web or shell (it
+cannot exfiltrate your resume or run git), and the renderer only compiles.
+
 ## Core principles
 
 - **Never invent.** Every claim in the output traces to content already in your
@@ -45,19 +50,37 @@ you can run the whole thing or any single step.
 ## Prerequisites
 
 - [Claude Code](https://claude.com/claude-code).
+- `python3` on your PATH (used by the guardrail hooks).
 - A LaTeX toolchain for rendering. On macOS:
   - `brew install --cask mactex-no-gui` (full, includes `latexmk`, recommended), or
   - `brew install tectonic` (lightweight; preview-quality only for this template).
   - No local install? You can still use the tailored `.tex` on
     [Overleaf](https://overleaf.com).
 
+## Install
+
+apply-kit is a Claude Code plugin. From Claude Code:
+
+```
+/plugin marketplace add DhruvPrajapati4/apply-kit
+/plugin install apply-kit@apply-kit
+```
+
+This registers the repo as a marketplace and installs the plugin (skills, and,
+as they land, agents and hooks). To iterate on the plugin locally, add the local
+checkout as a marketplace instead:
+
+```
+/plugin marketplace add /path/to/apply-kit
+/plugin install apply-kit@apply-kit
+```
+
 ## Setup
 
-1. Copy the `.claude/skills/` directory into your resume project so Claude Code
-   picks the skills up (project-scoped skills live under `.claude/skills/`).
-2. Put your master LaTeX resume at `resume/main.tex` (this path is git-ignored so
-   your resume never gets committed). The skills are tuned for Jake's Resume
-   Template but work with any single-file `.tex`.
+1. Install the plugin (above).
+2. Put your master LaTeX resume at `resume/main.tex` in your resume project (this
+   path is git-ignored so your resume never gets committed). The skills are tuned
+   for Jake's Resume Template but work with any single-file `.tex`.
 3. Optional: mark reserve bullets. Any commented-out `\resumeItem{...}` line is
    treated as a real, pre-approved accomplishment held in reserve that tailoring
    may swap in when a job makes it more relevant.
@@ -84,7 +107,13 @@ example `/resume-fit-report` to just get a gap analysis.
 
 - Accept a resume pasted as DOCX / PDF / plain LaTeX instead of assuming a fixed
   master path.
-- Package as an installable Claude Code plugin with a marketplace entry.
+- A "Using apply-kit from the Agent SDK" guide so the same pipeline can run
+  outside Claude Code.
+
+Done: packaged as an installable Claude Code plugin with a marketplace entry;
+scoped subagents per pipeline stage; guardrail-enforcing hooks (block resume
+content in web requests, enforce the one-page rule); bundled `humanize-text` so
+generated prose ships human-clean.
 
 Done: safety guardrails for public use (prompt-injection resistance, no
 fabrication, private data handling, no instruction leaking) — see
