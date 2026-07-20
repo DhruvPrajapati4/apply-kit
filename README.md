@@ -9,10 +9,10 @@ language, and renders a submittable PDF. Your master resume is never modified,
 and nothing is ever invented: the skills only reorder and rephrase what your
 resume already says.
 
-> **Status:** early / closed-user-group testing. The skills currently assume a
-> single-file LaTeX master resume (Jake's Resume Template). Support for pasting a
-> resume as DOCX / PDF / plain LaTeX, plus packaging as an installable plugin, is
-> on the roadmap below.
+> **Status:** early access / closed-user-group testing. apply-kit is packaged as
+> an installable Claude Code plugin and works within whatever template your resume
+> already uses (`.tex` or `.docx`). PDF ingest and a standalone Agent SDK guide are
+> still on the roadmap below.
 
 ## The pipeline
 
@@ -24,7 +24,7 @@ you can run the whole thing or any single step.
 | `ingest-resume` | Takes your own resume file (`.tex` or `.docx`) as the working master in your own template, and checks it has the sections a software-engineering resume needs. Polishes an existing resume; never authors one or invents missing sections. |
 | `extract-jd` | Fetches a job URL (or takes pasted text) and normalizes it into a structured brief: role, seniority, must-haves, and verbatim ATS keywords. |
 | `resume-fit-report` | Read-only. Scores how well your master resume matches the JD and separates presentation gaps (fixable) from genuine gaps (never invented). |
-| `tailor-resume` | Copies your master `.tex` to the scratchpad and applies faithful, template-aware edits: reorders and rephrases to hit the JD's keywords, surfaces reserve bullets, trims to one page. |
+| `tailor-resume` | Copies your master `.tex` to the scratchpad and applies faithful edits in the resume's own template: reorders and rephrases to hit the JD's keywords, surfaces reserve bullets, trims to one page. |
 | `render-resume` | Compiles the tailored `.tex` to PDF with `latexmk` (falling back to tectonic or pdflatex) and enforces the one-page rule. |
 | `apply-to-job` | Orchestrator. Runs the stages in order and pauses for your review before rendering. |
 
@@ -115,15 +115,12 @@ example `/resume-fit-report` to just get a gap analysis.
 - A "Using apply-kit from the Agent SDK" guide so the same pipeline can run
   outside Claude Code.
 
-Done: packaged as an installable Claude Code plugin with a marketplace entry;
-scoped subagents per pipeline stage; guardrail-enforcing hooks (block resume
-content in web requests, enforce the one-page rule); bundled `humanize-text` so
-generated prose ships human-clean; generic resume input for `.tex` and `.docx`
-with a software-engineering section-completeness check.
-
-Done: safety guardrails for public use (prompt-injection resistance, no
-fabrication, private data handling, no instruction leaking) — see
-[`GUARDRAILS.md`](GUARDRAILS.md).
+Already shipped: installable plugin with a marketplace entry; a scoped subagent
+per pipeline stage; generic `.tex`/`.docx` resume input with a software-engineering
+section-completeness check; bundled `humanize-text` so generated prose ships
+human-clean; and agent-behavior guardrails (prompt-injection resistance, no
+fabrication, private data kept local, no instruction leaking, one-page rule)
+enforced by tool scoping and hooks. See [`GUARDRAILS.md`](GUARDRAILS.md).
 
 ## License
 
