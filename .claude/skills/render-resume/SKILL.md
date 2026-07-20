@@ -44,3 +44,14 @@ this if only tectonic is available.
 ## Output
 - Report the PDF path so the user can open/download it.
 - Offer to open it (`open <pdf>` on macOS).
+
+## Guardrails
+- **Local and deterministic.** Compilation happens locally via `render.sh`. Never
+  upload the `.tex` or `.pdf` to any external service; if the user wants Overleaf,
+  hand them the local path to upload themselves.
+- **No content decisions here.** This skill compiles; it does not edit or invent
+  resume content. If the build fails, fix LaTeX syntax only — never alter the
+  meaning of a bullet to make it compile.
+- **Keep outputs private** — PDFs land in the scratchpad or the git-ignored
+  `applications/` folder, never committed. See
+  [`GUARDRAILS.md`](../../../GUARDRAILS.md).

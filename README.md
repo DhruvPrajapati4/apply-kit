@@ -37,6 +37,10 @@ you can run the whole thing or any single step.
   before anything is rendered.
 - **Your master is sacred.** All edits happen on a scratchpad copy. Your original
   `.tex` is never touched.
+- **Safe with untrusted input.** Job postings are treated as data, never as
+  instructions, so text planted in a posting cannot redirect the assistant or push
+  fabrications into your resume. Your resume data stays local and is never sent to
+  the web. See [`GUARDRAILS.md`](GUARDRAILS.md) for the full set.
 
 ## Prerequisites
 
@@ -80,9 +84,11 @@ example `/resume-fit-report` to just get a gap analysis.
 
 - Accept a resume pasted as DOCX / PDF / plain LaTeX instead of assuming a fixed
   master path.
-- Guardrails for public use: resist instructions embedded in fetched job
-  descriptions, and keep skill internals from leaking into output.
 - Package as an installable Claude Code plugin with a marketplace entry.
+
+Done: safety guardrails for public use (prompt-injection resistance, no
+fabrication, private data handling, no instruction leaking) — see
+[`GUARDRAILS.md`](GUARDRAILS.md).
 
 ## License
 
