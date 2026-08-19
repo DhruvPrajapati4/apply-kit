@@ -1,7 +1,7 @@
 {
   "name": "apply-kit",
   "displayName": "apply-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Find live job openings straight from company ATS boards, then faithfully tailor your LaTeX resume to a posting and render a one-page PDF. Skills for searching jobs, extracting a JD, checking fit, tailoring, and rendering, with safety guardrails.",
   "author": {
     "name": "Dhruv Prajapati",
