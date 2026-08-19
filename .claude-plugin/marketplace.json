@@ -8,7 +8,7 @@
     {
       "name": "apply-kit",
       "source": ".",
-      "description": "Faithfully tailor your LaTeX resume to a job posting and render a one-page PDF."
+      "description": "Find live job openings from company ATS boards, tailor your LaTeX resume to a posting, render a one-page PDF, draft the application's written answers, and prepare the submission for your confirmation."
     }
   ]
 }
