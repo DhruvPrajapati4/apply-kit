@@ -1,6 +1,6 @@
 ---
 name: find-jobs
-description: Find live job openings that actually match the user by querying company applicant tracking systems (Greenhouse, Lever, Ashby, Workable, Workday) directly, then filtering on location, title, stack and stated years of experience. Use whenever the user wants to discover roles rather than analyze one they already have - "find me backend jobs in Bengaluru", "who is hiring Go engineers", "what is open at these companies", "find roles that fit my resume", "any openings at seed startups near me" - and as the first stage before extract-jd when the user has no specific posting yet. Also use to look up which ATS a company uses, or to check whether a specific company has anything open. Do NOT use it when the user already has a job URL or pasted JD (use extract-jd), or when they want fit scoring against a known posting (use resume-fit-report).
+description: Find live job openings that actually match the user by querying company applicant tracking systems (Greenhouse, Lever, Ashby, Workable, Workday) directly, then filtering on location, title, stack and stated years of experience. Use whenever the user wants to discover roles rather than analyze one they already have - "find me backend jobs in Berlin", "who is hiring Rust engineers", "what is open at these companies", "find roles that fit my resume", "any openings at seed startups near me" - and as the first stage before extract-jd when the user has no specific posting yet. Also use to look up which ATS a company uses, or to check whether a specific company has anything open. Do NOT use it when the user already has a job URL or pasted JD (use extract-jd), or when they want fit scoring against a known posting (use resume-fit-report).
 ---
 
 # find-jobs
@@ -27,7 +27,7 @@ by asking. Do not guess a location or a seniority band; those two decide
 everything downstream.
 
 - **Location** - a regex, since one city has several spellings
-  (`bengaluru|bangalore`). Include `remote` if they will take it.
+  (`bengaluru|bangalore`, `sao paulo|sp`). Include `remote` if they will take it.
 - **Titles to keep** and **titles to drop**. Dropping is as important as keeping:
   `manager|director|intern|principal|staff` removes most of the noise for a
   mid-level candidate. Allow for punctuation variants, since titles are written
@@ -55,7 +55,7 @@ Two failure modes to watch for, because both produce confident nonsense:
 
 - **A slug that resolves to a different company of the same name.** Verify by
   looking at what the board actually contains. A board of drug-discovery roles in
-  California is not the AI startup in Bengaluru.
+  California is not the similarly named AI startup you were looking for.
 - **A company with no public ATS at all.** Many use a self-hosted or
   JavaScript-rendered careers page. Absence from a probe is not evidence they are
   not hiring. Say so rather than reporting them as having nothing open.
@@ -67,11 +67,11 @@ Add newly verified slugs to `references/companies.json` so the next run is faste
 ```bash
 python3 scripts/ats_search.py search \
   --companies references/companies.json \
-  --location 'bengaluru|bangalore' \
+  --location 'berlin|remote' \
   --title 'backend|platform|distributed|software engineer|sde' \
-  --exclude 'manager|director|intern|staff|principal|frontend|qa' \
-  --stack 'golang,kubernetes,kafka,postgresql,redis,grpc,aws' \
-  --max-min-years 5 \
+  --exclude 'manager|director|intern|staff|principal|front[- ]?end|qa' \
+  --stack 'rust,kubernetes,kafka,postgresql,redis,grpc,aws' \
+  --max-min-years 7 \
   --markdown job-leads.md --json job-leads.json
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: find-and-apply
-description: The whole job hunt in one command - search company ATS boards for live openings, score each one against the user's resume, let them pick from a ranked shortlist, then tailor, render, answer the form's questions and prepare each application for submission. Use whenever the user wants the end-to-end run rather than a single stage: "find and apply to backend jobs in Bengaluru", "do the whole thing", "search and apply", "find me roles and get the applications ready", or any request that starts at "I need a job" rather than at a specific posting. If the user already has one specific posting, use apply-to-job instead. If they only want to see what is out there, use find-jobs.
+description: The whole job hunt in one command - search company ATS boards for live openings, score each one against the user's resume, let them pick from a ranked shortlist, then tailor, render, answer the form's questions and prepare each application for submission. Use whenever the user wants the end-to-end run rather than a single stage: "find and apply to backend jobs in Berlin", "do the whole thing", "search and apply", "find me roles and get the applications ready", or any request that starts at "I need a job" rather than at a specific posting. If the user already has one specific posting, use apply-to-job instead. If they only want to see what is out there, use find-jobs.
 ---
 
 # find-and-apply

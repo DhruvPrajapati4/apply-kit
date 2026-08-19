@@ -10,7 +10,7 @@ by querying company applicant tracking systems directly. Your master resume is
 never modified, and nothing is ever invented: the skills only reorder and
 rephrase what your resume already says.
 
-> **Status:** early access / closed-user-group testing. apply-kit is packaged as
+> **Status:** early access. apply-kit is packaged as
 > an installable Claude Code plugin and works within whatever template your resume
 > already uses (`.tex` or `.docx`). PDF ingest and a standalone Agent SDK guide are
 > still on the roadmap below.
@@ -102,7 +102,7 @@ checkout as a marketplace instead:
 In Claude Code, from your resume project. For the whole hunt in one command:
 
 ```
-/find-and-apply backend roles in Bengaluru, Go and Kubernetes, 3 to 5 years
+/find-and-apply backend roles in Berlin, Rust and Postgres, 4 to 7 years
 ```
 
 That searches company boards, scores the leads against your resume, and shows
@@ -130,7 +130,7 @@ example `/resume-fit-report` to just get a gap analysis.
 If you do not have a posting in mind yet, start with discovery:
 
 ```
-/find-jobs backend roles in Bengaluru, Go and Kubernetes, around 3 to 5 years
+/find-jobs data platform roles in Dublin or remote, Scala and Spark, senior
 ```
 
 Add `--skip-providers workday` to the search if you only want roles that can be
@@ -146,8 +146,8 @@ The search script also runs standalone, without Claude:
 python3 skills/find-jobs/scripts/ats_search.py probe --slugs acme,acmeinc,globex
 python3 skills/find-jobs/scripts/ats_search.py search \
   --companies skills/find-jobs/references/companies.json \
-  --location 'bengaluru|bangalore' --title 'backend|platform' \
-  --exclude 'manager|intern' --stack 'golang,kafka' --markdown leads.md
+  --location 'berlin|remote' --title 'backend|platform' \
+  --exclude 'manager|intern' --stack 'rust,postgres' --markdown leads.md
 ```
 
 `probe` resolves which board a company slug lives on, since slugs frequently do
@@ -174,4 +174,4 @@ enforced by tool scoping and hooks. See [`GUARDRAILS.md`](GUARDRAILS.md).
 
 ## License
 
-TBD before public release.
+[MIT](LICENSE).

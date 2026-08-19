@@ -19,10 +19,10 @@ Standard library only, so it runs anywhere python3 does.
 Usage:
   ats_search.py probe  --slugs acme,globex,initech [--json out.json]
   ats_search.py search --companies companies.json \\
-                       --location 'bengaluru|bangalore' \\
+                       --location 'berlin|remote' \\
                        --title 'backend|platform|sde|software engineer' \\
                        --exclude 'manager|director|intern|principal' \\
-                       --stack 'golang,kubernetes,kafka,postgres' \\
+                       --stack 'rust,kubernetes,kafka,postgres' \\
                        --max-min-years 5 \\
                        --markdown leads.md --json leads.json
   ats_search.py --selftest
@@ -368,15 +368,15 @@ def selftest() -> None:
     assert stack_hits("An ongoing category of work", "Engineer", ["go"]) == [], \
         "substring false positives must not match"
 
-    loc = re.compile("bengaluru|bangalore", re.I)
+    loc = re.compile("metropolis|megacity", re.I)
     ttl = re.compile("backend", re.I)
     exc = re.compile("manager", re.I)
-    keep = {"title": "Backend Engineer", "location": "Bengaluru, India", "min_years": 3}
+    keep = {"title": "Backend Engineer", "location": "Metropolis, Freedonia", "min_years": 3}
     drop_loc = {"title": "Backend Engineer", "location": "Berlin", "min_years": 3}
-    drop_ttl = {"title": "Frontend Engineer", "location": "Bengaluru", "min_years": 3}
-    drop_exc = {"title": "Backend Engineering Manager", "location": "Bengaluru", "min_years": 3}
-    drop_yrs = {"title": "Backend Engineer", "location": "Bengaluru", "min_years": 9}
-    unknown_yrs = {"title": "Backend Engineer", "location": "Bengaluru", "min_years": None}
+    drop_ttl = {"title": "Frontend Engineer", "location": "Metropolis", "min_years": 3}
+    drop_exc = {"title": "Backend Engineering Manager", "location": "Metropolis", "min_years": 3}
+    drop_yrs = {"title": "Backend Engineer", "location": "Metropolis", "min_years": 9}
+    unknown_yrs = {"title": "Backend Engineer", "location": "Metropolis", "min_years": None}
 
     assert matches(keep, loc, ttl, exc, 5)
     assert not matches(drop_loc, loc, ttl, exc, 5)
