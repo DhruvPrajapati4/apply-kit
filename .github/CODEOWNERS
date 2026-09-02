@@ -1,0 +1,11 @@
+# Code owners for apply-kit.
+#
+# The "Main-push" ruleset asks for code owner review on pull requests into
+# main. Without this file no path has an owner, so that requirement cannot be
+# satisfied by review at all, only bypassed.
+#
+# One owner, every path, since this is a single-maintainer repo. Add narrower
+# lines above the catch-all when that changes: later matches win, so the
+# catch-all must stay last.
+
+* @DhruvPrajapati4
