@@ -6,24 +6,37 @@ same data the company's own careers page renders, they are public, and they carr
 the full posting text, so we can filter on location, stack, and stated years of
 experience instead of guessing from a title.
 
-Two modes:
+Three modes:
 
-  probe   Given candidate slugs, find which ATS (if any) each one lives on.
-          Slugs frequently do not match the company name, so this is how you
-          discover them. Cheap to run against a long guess list.
+  discover  Search every Workable-hosted board at once, with no company list at
+            all. This is how roles at companies nobody curated get found.
 
-  search  Given a resolved slug list, pull every posting and filter it.
+  probe     Given company names or candidate slugs, find which ATS (if any)
+            each one lives on, and optionally append the verified ones to a
+            companies file. Slugs frequently do not match the company name, so
+            this is how you resolve them. Cheap to run against a long list.
+
+  search    Given a resolved slug list, pull every posting and filter it.
+
+The companies file is a cache of resolved slugs, not a fixed universe: probe
+--append grows it, and discover finds work outside it entirely.
 
 Standard library only, so it runs anywhere python3 does.
 
 Usage:
+  ats_search.py discover --query 'backend engineer' --location india \\
+                       --title 'backend|platform' --stack 'go,kubernetes' \\
+                       --companies companies.json \\
+                       --markdown leads.md --json leads.json
+  ats_search.py probe  --names 'Acme Labs, Globex' --stage series-b \\
+                       --append companies.json
   ats_search.py probe  --slugs acme,globex,initech [--json out.json]
   ats_search.py search --companies companies.json \\
                        --location 'berlin|remote' \\
                        --title 'backend|platform|sde|software engineer' \\
                        --exclude 'manager|director|intern|principal' \\
                        --stack 'rust,kubernetes,kafka,postgres' \\
-                       --max-min-years 5 \\
+                       --max-min-years 5 --stage 'series-[abc]' \\
                        --markdown leads.md --json leads.json
   ats_search.py --selftest
 """
@@ -32,10 +45,12 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures as futures
+import datetime
 import html
 import json
 import re
 import sys
+import urllib.parse
 import urllib.request
 
 UA = "Mozilla/5.0 (compatible; apply-kit/0.1; +https://github.com/DhruvPrajapati4/apply-kit)"
@@ -130,6 +145,47 @@ def _workable(slug: str) -> list[dict]:
         }
         for j in d.get("jobs", [])
     ]
+
+
+def workable_search(query: str, location: str, pages: int = 5) -> list[dict]:
+    """Search across every Workable-hosted board at once.
+
+    The provider functions above all need a slug you already know, which is why
+    a curated company list existed in the first place. This endpoint backs
+    Workable's own public job-seeker site, so it spans their whole customer base
+    and needs no list: it is the one cross-tenant search any of the five
+    providers expose. Greenhouse, Lever and Ashby publish per-board endpoints
+    only, and none of them publish an index of boards, so a Workable-only sweep
+    is the honest ceiling here. Report it as such.
+    """
+    out, token = [], None
+    for _ in range(max(1, pages)):
+        params = {"query": query or "", "location": location or ""}
+        if token:
+            params["pageToken"] = token
+        d = _get("https://jobs.workable.com/api/v1/jobs?" + urllib.parse.urlencode(params))
+        jobs = d.get("jobs", [])
+        if not jobs:
+            break
+        for j in jobs:
+            co = j.get("company") or {}
+            loc = j.get("location") or {}
+            out.append({
+                "title": j.get("title", ""),
+                "location": ", ".join(j.get("locations") or [])
+                            or ", ".join(filter(None, [loc.get("city"), loc.get("countryName")])),
+                "url": j.get("url", ""),
+                "description": _clean(j.get("description")) + " "
+                               + _clean(j.get("requirementsSection")),
+                "updated": j.get("updated", ""),
+                "company": co.get("title", ""),
+                "website": co.get("website", ""),
+                "provider": "workable",
+            })
+        token = d.get("nextPageToken")
+        if not token:
+            break
+    return out
 
 
 def _recruitee(slug: str) -> list[dict]:
@@ -250,6 +306,53 @@ def matches(posting: dict, location: re.Pattern | None, title: re.Pattern | None
 # Modes
 # --------------------------------------------------------------------------
 
+STRIPPABLE = {
+    "inc", "llc", "ltd", "limited", "corp", "co", "labs", "lab", "technologies",
+    "technology", "tech", "software", "systems", "ai", "io", "hq", "the", "group",
+}
+
+
+def slug_candidates(name: str) -> list[str]:
+    """Guess the board slugs a company name might resolve to.
+
+    Nothing maps a name to an ATS slug, so the only route is to generate the
+    plausible forms and let probe say which ones exist. Cheap: a wrong guess is
+    one 404.
+    """
+    words = [w for w in re.split(r"[^a-z0-9]+", name.lower()) if w]
+    if not words:
+        return []
+    cands = ["".join(words), "-".join(words), "".join(words) + "inc"]
+    if len(words) > 1 and words[-1] in STRIPPABLE:
+        core = words[:-1]
+        cands += ["".join(core), "-".join(core)]
+    seen, out = set(), []
+    for c in cands:
+        if c not in seen:
+            seen.add(c)
+            out.append(c)
+    return out
+
+
+def filter_and_score(postings: list[dict], args: argparse.Namespace) -> list[dict]:
+    """Apply the title/location/years filters and score stack overlap."""
+    location = re.compile(args.location, re.I) if args.location else None
+    title = re.compile(args.title, re.I) if args.title else None
+    exclude = re.compile(args.exclude, re.I) if args.exclude else None
+    stack = args.stack.split(",") if args.stack else []
+
+    leads = []
+    for j in postings:
+        j["min_years"] = min_years(j.get("description", ""))
+        if not matches(j, location, title, exclude, args.max_min_years):
+            continue
+        j["stack_hits"] = stack_hits(j.get("description", ""), j.get("title", ""), stack)
+        j["score"] = len(j["stack_hits"])
+        leads.append(j)
+    leads.sort(key=lambda j: (-j["score"], j["company"], j["title"]))
+    return leads
+
+
 def probe_one(slug: str) -> list[dict]:
     found = []
     for name, fn in PROVIDERS.items():
@@ -264,12 +367,74 @@ def probe_one(slug: str) -> list[dict]:
     return found
 
 
-def run_probe(slugs: list[str]) -> list[dict]:
+def run_probe(slugs: list[str], names: list[str] | None = None) -> list[dict]:
+    """Resolve slugs to boards. With names, guess each name's slugs first."""
+    pairs = [("", s) for s in slugs]
+    for name in names or []:
+        pairs += [(name, s) for s in slug_candidates(name)]
+
     results = []
     with futures.ThreadPoolExecutor(WORKERS) as pool:
-        for hits in pool.map(probe_one, slugs):
-            results.extend(hits)
+        for (name, _slug), hits in zip(pairs, pool.map(lambda p: probe_one(p[1]), pairs)):
+            for h in hits:
+                results.append({**h, "name": name or h["slug"]})
     return results
+
+
+def append_companies(path: str, hits: list[dict], stage: str | None) -> tuple[int, int]:
+    """Merge verified boards into the companies file so the list grows itself.
+
+    Without this the file only grows when someone remembers to hand-edit it,
+    which is how a list of verified slugs goes stale.
+    """
+    with open(path) as fh:
+        entries = json.load(fh)
+    if isinstance(entries, dict):
+        entries = entries.get("companies", [])
+
+    by_name = {(e.get("name") or "").lower(): e for e in entries}
+    today = datetime.date.today().isoformat()
+    added = changed = 0
+
+    # One name can match several slugs; keep the board carrying the most jobs.
+    best: dict[tuple[str, str], dict] = {}
+    for h in hits:
+        key = (h["name"].lower(), h["provider"])
+        if h["job_count"] > best.get(key, {}).get("job_count", -1):
+            best[key] = h
+
+    for h in best.values():
+        entry = by_name.get(h["name"].lower())
+        if entry is None:
+            entry = {"name": h["name"]}
+            entries.append(entry)
+            by_name[h["name"].lower()] = entry
+            added += 1
+        elif entry.get(h["provider"]) != h["slug"]:
+            changed += 1
+        entry[h["provider"]] = h["slug"]
+        if stage:
+            entry["stage"] = stage
+        entry["verified"] = today
+
+    entries.sort(key=lambda e: (e.get("name") or "").lower())
+    body = ",\n".join("  " + _entry_line(e) for e in entries)
+    with open(path, "w") as fh:
+        fh.write("[\n" + body + "\n]\n")
+    return added, changed
+
+
+def _entry_line(value: object) -> str:
+    """One entry per line, in the companies file's existing shape.
+
+    json.dump would reflow all 85 lines, so a two-company merge would read as a
+    whole-file rewrite in the diff. Matching the hand-written style keeps the
+    diff to the lines that actually changed.
+    """
+    if isinstance(value, dict):
+        inner = ", ".join(f"{json.dumps(k)}: {_entry_line(v)}" for k, v in value.items())
+        return "{ " + inner + " }"
+    return json.dumps(value)
 
 
 def fetch_company(entry: dict, skip: frozenset[str] = frozenset()) -> list[dict]:
@@ -292,10 +457,16 @@ def fetch_company(entry: dict, skip: frozenset[str] = frozenset()) -> list[dict]
 
 
 def run_search(companies: list[dict], args: argparse.Namespace) -> list[dict]:
-    location = re.compile(args.location, re.I) if args.location else None
-    title = re.compile(args.title, re.I) if args.title else None
-    exclude = re.compile(args.exclude, re.I) if args.exclude else None
-    stack = args.stack.split(",") if args.stack else []
+    if getattr(args, "stage", None):
+        stage = re.compile(args.stage, re.I)
+        before = len(companies)
+        companies = [c for c in companies if stage.search(c.get("stage", ""))]
+        print(
+            f"Stage filter '{args.stage}' kept {len(companies)}/{before} companies. "
+            "Entries with no stage recorded are dropped, so an untagged file "
+            "will scan nothing.",
+            file=sys.stderr,
+        )
 
     skip = frozenset(
         p.strip().lower() for p in (args.skip_providers or "").split(",") if p.strip()
@@ -305,21 +476,43 @@ def run_search(companies: list[dict], args: argparse.Namespace) -> list[dict]:
         for jobs in pool.map(lambda e: fetch_company(e, skip), companies):
             everything.extend(jobs)
 
-    leads = []
-    for j in everything:
-        j["min_years"] = min_years(j.get("description", ""))
-        if not matches(j, location, title, exclude, args.max_min_years):
-            continue
-        j["stack_hits"] = stack_hits(j.get("description", ""), j.get("title", ""), stack)
-        j["score"] = len(j["stack_hits"])
-        leads.append(j)
-
-    leads.sort(key=lambda j: (-j["score"], j["company"], j["title"]))
+    leads = filter_and_score(everything, args)
     print(
         f"Scanned {len(everything)} postings across {len(companies)} companies, "
         f"{len(leads)} matched.",
         file=sys.stderr,
     )
+    return leads
+
+
+def run_discover(args: argparse.Namespace) -> list[dict]:
+    """List-free search, then flag which companies the curated file is missing."""
+    postings = workable_search(args.query, args.location, args.pages)
+    # The API already filtered on --location; a regex post-filter is opt-in.
+    args.location = args.location_regex
+    leads = filter_and_score(postings, args)
+
+    known = set()
+    if args.companies:
+        with open(args.companies) as fh:
+            entries = json.load(fh)
+        if isinstance(entries, dict):
+            entries = entries.get("companies", [])
+        known = {(e.get("name") or "").lower() for e in entries}
+    for j in leads:
+        j["new_company"] = j["company"].lower() not in known if known else None
+
+    fresh = sorted({j["company"] for j in leads if j.get("new_company")})
+    tail = (f", {len(fresh)} companies not in the curated file" if known
+            else " (pass --companies to see which companies are new)")
+    print(
+        f"Discovered {len(postings)} postings across "
+        f"{len({p['company'] for p in postings})} Workable companies, "
+        f"{len(leads)} matched{tail}.",
+        file=sys.stderr,
+    )
+    if fresh:
+        print("New companies: " + ", ".join(fresh), file=sys.stderr)
     return leads
 
 
@@ -340,9 +533,16 @@ def to_markdown(leads: list[dict]) -> str:
         yrs = j["min_years"] if j["min_years"] is not None else "-"
         title = j["title"].replace("|", "/")
         loc = (j["location"] or "-").replace("|", "/")
+        company = j["company"] + (" (new)" if j.get("new_company") else "")
         lines.append(
-            f"| {j['company']} | {title} | {loc} | {yrs} | {hits} | [apply]({j['url']}) |"
+            f"| {company} | {title} | {loc} | {yrs} | {hits} | [apply]({j['url']}) |"
         )
+    if any(j.get("new_company") for j in leads):
+        lines += [
+            "",
+            "`(new)` marks a company absent from the curated companies file. Resolve",
+            "and keep it with: `probe --names '<company>' --append <companies.json>`.",
+        ]
     if any(j["provider"] == "workday" for j in leads):
         lines += [
             "",
@@ -387,6 +587,38 @@ def selftest() -> None:
 
     assert _clean("<p>Hello &amp; <b>bye</b></p>") == "Hello & bye"
 
+    assert slug_candidates("Acme Labs") == ["acmelabs", "acme-labs", "acmelabsinc", "acme"], \
+        "a strippable trailing word yields the bare-name variants too"
+    assert slug_candidates("Zeta") == ["zeta", "zetainc"]
+    assert slug_candidates("Observe.ai") == ["observeai", "observe-ai", "observeaiinc", "observe"]
+    assert slug_candidates("  ") == []
+
+    import tempfile, os
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, "companies.json")
+        nested = ('  { "name": "Globex", "workday": { "host": "h", "tenant": "t", '
+                  '"board": "External" } }')
+        with open(path, "w") as fh:
+            fh.write('[\n  { "name": "Zeta", "lever": "zeta" },\n' + nested + "\n]\n")
+        hits = [
+            {"name": "Acme", "provider": "greenhouse", "slug": "acmeinc", "job_count": 9},
+            {"name": "Acme", "provider": "greenhouse", "slug": "acme", "job_count": 2},
+            {"name": "Zeta", "provider": "lever", "slug": "zeta", "job_count": 4},
+        ]
+        added, changed = append_companies(path, hits, "series-b")
+        with open(path) as fh:
+            text = fh.read()
+        merged = json.loads(text)
+        assert (added, changed) == (1, 0), (added, changed)
+        by_name = {e["name"]: e for e in merged}
+        assert by_name["Acme"]["greenhouse"] == "acmeinc", "the busiest board wins"
+        assert by_name["Acme"]["stage"] == "series-b"
+        assert by_name["Zeta"]["lever"] == "zeta", "an existing entry is not clobbered"
+        assert [e["name"] for e in merged] == ["Acme", "Globex", "Zeta"], "file stays sorted"
+        assert "verified" in by_name["Acme"] and "verified" not in by_name["Globex"], \
+            "only touched entries are stamped"
+        assert nested + "," in text, "untouched lines keep their exact formatting"
+
     print("selftest: all checks passed")
 
 
@@ -400,8 +632,28 @@ def main() -> int:
     p.add_argument("--selftest", action="store_true", help="run offline checks and exit")
     sub = p.add_subparsers(dest="mode")
 
-    pp = sub.add_parser("probe", help="discover which ATS a slug lives on")
-    pp.add_argument("--slugs", required=True, help="comma-separated slugs, or a file path")
+    dp = sub.add_parser("discover", help="search all Workable boards, no company list")
+    dp.add_argument("--query", default="", help="free-text search, e.g. 'backend engineer'")
+    dp.add_argument("--location", default="", help="plain location for the API, e.g. 'india'")
+    dp.add_argument("--location-regex", help="optional regex re-filter of the results")
+    dp.add_argument("--pages", type=int, default=5, help="pages of 20 to pull (default 5)")
+    dp.add_argument("--companies", help="companies file to diff against, to flag new ones")
+    dp.add_argument("--title", help="regex a title must match")
+    dp.add_argument("--exclude", help="regex a title must NOT match")
+    dp.add_argument("--stack", help="comma-separated tech terms to score overlap on")
+    dp.add_argument("--max-min-years", type=int,
+                    help="drop postings whose stated floor exceeds this")
+    dp.add_argument("--markdown", help="write a markdown table here")
+    dp.add_argument("--json", help="write raw results here")
+
+    pp = sub.add_parser("probe", help="resolve company names or slugs to ATS boards")
+    pp.add_argument("--slugs", help="comma-separated slugs, or a file path")
+    pp.add_argument("--names", help="comma-separated company names; slugs are guessed")
+    pp.add_argument("--append", metavar="COMPANIES_JSON",
+                    help="merge verified boards into this companies file")
+    pp.add_argument("--stage", help="funding stage to record on appended entries, "
+                                    "e.g. 'series-b'. Not available from any ATS, so "
+                                    "it is whatever you supply.")
     pp.add_argument("--json", help="write results here")
 
     sp = sub.add_parser("search", help="pull and filter postings")
@@ -412,6 +664,9 @@ def main() -> int:
     sp.add_argument("--stack", help="comma-separated tech terms to score overlap on")
     sp.add_argument("--max-min-years", type=int,
                     help="drop postings whose stated floor exceeds this")
+    sp.add_argument("--stage", help="regex matched against each company's recorded "
+                                    "stage, e.g. 'series-[abc]'. Untagged entries "
+                                    "are dropped.")
     sp.add_argument("--skip-providers",
                     help="comma-separated providers to ignore, e.g. 'workday' for "
                          "boards that need an account and cannot be auto-filled")
@@ -424,18 +679,50 @@ def main() -> int:
         selftest()
         return 0
 
+    if args.mode == "discover":
+        leads = run_discover(args)
+        if args.json:
+            with open(args.json, "w") as fh:
+                json.dump(leads, fh, indent=2)
+        md = to_markdown(leads)
+        if args.markdown:
+            with open(args.markdown, "w") as fh:
+                fh.write(md)
+            print(f"wrote {args.markdown}", file=sys.stderr)
+        else:
+            print(md)
+        return 0
+
     if args.mode == "probe":
-        raw = args.slugs
-        try:
-            with open(raw) as fh:
-                slugs = [ln.strip() for ln in fh if ln.strip()]
-        except OSError:
-            slugs = [s.strip() for s in raw.split(",") if s.strip()]
-        hits = run_probe(slugs)
+        if not args.slugs and not args.names:
+            print("probe needs --slugs or --names", file=sys.stderr)
+            return 1
+        slugs = []
+        if args.slugs:
+            try:
+                with open(args.slugs) as fh:
+                    slugs = [ln.strip() for ln in fh if ln.strip()]
+            except OSError:
+                slugs = [s.strip() for s in args.slugs.split(",") if s.strip()]
+        names = [n.strip() for n in (args.names or "").split(",") if n.strip()]
+
+        hits = run_probe(slugs, names)
         for h in hits:
-            print(f"{h['provider']:11} {h['slug']:24} {h['job_count']} jobs")
+            print(f"{h['provider']:11} {h['name']:28} {h['slug']:24} {h['job_count']} jobs")
+        for name in names:
+            found = {h["slug"] for h in hits if h["name"] == name}
+            if len(found) > 1:
+                print(
+                    f"! {name} matched several slugs ({', '.join(sorted(found))}). "
+                    "Open the boards before trusting one: a slug can belong to a "
+                    "different company of the same name.",
+                    file=sys.stderr,
+                )
         if not hits:
-            print("no ATS boards found for those slugs", file=sys.stderr)
+            print("no ATS boards found", file=sys.stderr)
+        if args.append and hits:
+            added, changed = append_companies(args.append, hits, args.stage)
+            print(f"{args.append}: {added} added, {changed} updated", file=sys.stderr)
         if args.json:
             with open(args.json, "w") as fh:
                 json.dump(hits, fh, indent=2)

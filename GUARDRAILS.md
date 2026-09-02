@@ -45,6 +45,14 @@ The kit treats it as private:
   `resume/` and `applications/` are git-ignored precisely so private data cannot
   leak into version control.
 - Your contact details are not echoed into unrelated outputs.
+- The answers you would otherwise retype on every form (voluntary
+  self-identification, notice period) are asked once and kept in Claude's local
+  memory for your machine, deliberately not in a file inside this repository.
+  Personal data in a tracked file gets committed eventually, however careful the
+  ignore rules are. Those answers are read only to fill a form you are about to
+  approve, and are never included in a web fetch, a search query, a commit, or a
+  report to anyone but you. Tell Claude to forget one and the kit goes back to
+  leaving that field blank.
 
 ## 4. Some questions are yours, not the assistant's
 
@@ -53,12 +61,24 @@ Four categories are deliberately handed back rather than answered, because a
 guess is either meaningless or actively harmful:
 
 - **Demographic and EEO fields** (gender, race, disability, veteran status) are
-  personal disclosures with legal weight. They are always left blank for you.
+  personal disclosures with legal weight, so they are never inferred: not from
+  your name, your location, or anything in your resume. They are filled only
+  from an answer you gave yourself, and left blank otherwise. Being asked once
+  and remembered is you answering once instead of forty times, not the kit
+  deciding on your behalf, and every filled value still appears in the
+  pre-submit manifest for you to check.
 - **Salary expectations and current compensation** are a negotiating position,
   not a fact to be looked up, and in several jurisdictions an employer may not
   ask at all.
-- **Notice period, start date, work authorization, visa status, relocation** are
-  facts only you hold, and a wrong answer can invalidate an application.
+- **Work authorization, visa status, relocation** are facts only you hold or
+  life decisions, and a wrong answer can invalidate an application.
+- **Notice period and start date** are handed back until you have given the
+  notice period once. It is a contractual fact rather than a negotiating
+  position, so remembering it is safe in a way remembering a salary figure is
+  not. A start date is then derived from it (submission date plus the period)
+  and shown to you as derived rather than entered silently. Whether the period
+  can be shortened stays yours: the kit never offers a buyout or an early
+  release on your behalf.
 - **Behavioral questions** ("a time you disagreed with a teammate") describe
   events that are not in your resume. The kit asks you for what happened and
   helps you shape it; it never authors the event. Writing feels like a style task
@@ -69,8 +89,10 @@ have actually done.
 
 ## 5. Job search results are reported honestly
 
-Discovery (`find-jobs`) reads public job boards and reports what it found. Two
-rules keep that report trustworthy:
+Discovery (`find-jobs`) reads public job boards and reports what it found. It
+searches beyond its bundled company list, via the one provider that publishes a
+cross-company job index, and adds companies it resolves to that list as it goes.
+Three rules keep the report trustworthy:
 
 - **No invented postings.** Every lead traces to a real board response with a real
   URL. A role recalled from memory or lifted from a search snippet is labeled
@@ -80,6 +102,14 @@ rules keep that report trustworthy:
   board, a JavaScript-rendered careers page, a failed request). A short list
   presented without that context reads as "nothing is out there", which is
   usually false and is the kind of quiet error a candidate cannot detect.
+
+- **An uncurated result is flagged as one.** The bundled company list was
+  reviewed by a human. A company that turned up in a cross-company search was
+  not, so it is checked for being a real employer before you are asked to spend
+  effort on it, and staffing mills, reposted listings and anything asking an
+  applicant for money are called out. Funding stage is not published by any job
+  board, so a stage recorded against a company is only ever one that was
+  actually checked, with the source given.
 
 Only the boards are contacted during discovery. Resume content never enters a
 search request.

@@ -137,9 +137,9 @@ Never answered, always returned to the user with a one-line reason:
 
 | Question | Why it is theirs |
 |---|---|
-| Gender, race, ethnicity, disability, veteran status | Personal disclosures with legal weight. Leave blank. |
+| Gender, race, ethnicity, disability, veteran status | Personal disclosures with legal weight. Never inferred. Filled only from an answer the user gave for this purpose, otherwise left blank. |
 | Salary expectation, current compensation | A negotiating position, not a fact. In several jurisdictions the employer may not ask at all. |
-| Notice period, earliest start date | Only the user knows, and a wrong answer is binding. |
+| Notice period, earliest start date | Taken from the user's remembered answer if they have given one, with the start date derived from it and flagged as derived. Otherwise theirs: a wrong answer is binding. Flexibility on the period is always theirs. |
 | Work authorization, visa status, sponsorship needed | A legal fact about the user. A guess can invalidate the application. |
 | Willing to relocate, preferred location | A life decision. |
 | Referral source, how did you hear about us | The user knows; the model would be guessing. |

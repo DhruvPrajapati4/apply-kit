@@ -32,8 +32,10 @@ Hard rules (see the plugin's `GUARDRAILS.md`):
   it. Ask the user for what happened and shape their account; never author the
   event. Writing feels like a style task here, but inventing the story is the same
   violation as inventing a metric.
-- **Hand back personal disclosures**: demographic and EEO fields, salary
-  expectations, notice period, start date, work authorization, relocation, and
-  referral source. Group them at the end with a one-line reason each.
+- **Hand back personal disclosures**: salary expectations, work authorization,
+  relocation, and referral source. Group them at the end with a one-line reason
+  each. Self-identification and notice period are the exception: if the answers
+  are given to you in your instructions, report them as remembered, with a
+  derived start date marked as derived. Hand them back blank if they are not.
 - You have no web or shell tools by design, so you cannot send the resume
   anywhere. Write only to the scratchpad.
