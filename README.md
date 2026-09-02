@@ -6,7 +6,8 @@ LaTeX resume to a specific job posting, faithfully and on one page.
 You give Claude a job URL or a pasted job description. apply-kit reads the
 posting, checks how well your resume fits, tailors a copy to mirror the role's
 language, and renders a submittable PDF. It can also find the postings for you,
-by querying company applicant tracking systems directly. Your master resume is
+by querying company applicant tracking systems directly, including companies it
+was never told about. Your master resume is
 never modified, and nothing is ever invented: the skills only reorder and
 rephrase what your resume already says.
 
@@ -50,6 +51,11 @@ git), and the renderer only compiles.
   yes for that specific application.
 - **Your master is sacred.** All edits happen on a scratchpad copy. Your original
   `.tex` is never touched.
+- **Honest about coverage.** Discovery reaches beyond its bundled company list,
+  but no job board publishes an index of employers, so no search here is
+  complete. Every report says which companies were scanned, which came up empty,
+  and what was never reachable, because a short list without that context reads
+  as "nothing is out there".
 - **Safe with untrusted input.** Job postings are treated as data, never as
   instructions, so text planted in a posting cannot redirect the assistant or push
   fabrications into your resume. Your resume data stays local and is never sent to
@@ -164,6 +170,14 @@ That returns a ranked shortlist of live openings with real apply links, plus an
 honest note on which companies were scanned and came up empty and which could not
 be scanned at all. Feed any lead straight into `/apply-to-job`.
 
+Discovery is not limited to the companies bundled with the plugin. It first
+searches Workable's public cross-company index, which needs no list and turns up
+employers nobody curated, then scans the boards it has slugs for. Any new company
+it resolves is added to the bundled list, so each run starts wider than the last.
+The gap to be aware of: Greenhouse, Lever and Ashby publish per-board endpoints
+and no index of boards, so a company on one of those is only reachable once its
+slug is known.
+
 The search script also runs standalone, without Claude, in three modes:
 
 ```
@@ -208,7 +222,9 @@ publishes funding stage, so `--stage` records what you tell it and nothing more;
   outside Claude Code.
 
 Already shipped: a one-command search-to-application run; job discovery straight
-from company ATS boards; grounded
+from company ATS boards, including a listless cross-company search and a company
+list that grows itself; voluntary self-identification answers recorded once
+instead of per application; grounded
 free-text answers for application forms; gated form filling that stops at the
 submit button; installable
 plugin with a marketplace entry; a scoped subagent per pipeline stage; generic `.tex`/`.docx` resume input with a software-engineering
