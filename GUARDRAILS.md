@@ -45,6 +45,13 @@ The kit treats it as private:
   `resume/` and `applications/` are git-ignored precisely so private data cannot
   leak into version control.
 - Your contact details are not echoed into unrelated outputs.
+- `resume/profile.json`, if you create one, holds the voluntary
+  self-identification answers you would otherwise retype on every form (gender,
+  race and ethnicity, disability, veteran status). It is git-ignored like the
+  rest of `resume/`, it is read only to fill a form you are about to approve, and
+  it is never included in a web fetch, a search query, a commit, or a report to
+  anyone but you. Delete a line, or the file, and the kit goes back to leaving
+  that field blank.
 
 ## 4. Some questions are yours, not the assistant's
 
@@ -53,7 +60,12 @@ Four categories are deliberately handed back rather than answered, because a
 guess is either meaningless or actively harmful:
 
 - **Demographic and EEO fields** (gender, race, disability, veteran status) are
-  personal disclosures with legal weight. They are always left blank for you.
+  personal disclosures with legal weight, so they are never inferred: not from
+  your name, your location, or anything in your resume. They are filled only
+  from a value you recorded yourself in `resume/profile.json`, and left blank
+  otherwise. Recording them there is you answering once instead of forty times,
+  not the kit deciding on your behalf, and every filled value still appears in
+  the pre-submit manifest for you to check.
 - **Salary expectations and current compensation** are a negotiating position,
   not a fact to be looked up, and in several jurisdictions an employer may not
   ask at all.
@@ -69,8 +81,10 @@ have actually done.
 
 ## 5. Job search results are reported honestly
 
-Discovery (`find-jobs`) reads public job boards and reports what it found. Two
-rules keep that report trustworthy:
+Discovery (`find-jobs`) reads public job boards and reports what it found. It
+searches beyond its bundled company list, via the one provider that publishes a
+cross-company job index, and adds companies it resolves to that list as it goes.
+Three rules keep the report trustworthy:
 
 - **No invented postings.** Every lead traces to a real board response with a real
   URL. A role recalled from memory or lifted from a search snippet is labeled
@@ -80,6 +94,14 @@ rules keep that report trustworthy:
   board, a JavaScript-rendered careers page, a failed request). A short list
   presented without that context reads as "nothing is out there", which is
   usually false and is the kind of quiet error a candidate cannot detect.
+
+- **An uncurated result is flagged as one.** The bundled company list was
+  reviewed by a human. A company that turned up in a cross-company search was
+  not, so it is checked for being a real employer before you are asked to spend
+  effort on it, and staffing mills, reposted listings and anything asking an
+  applicant for money are called out. Funding stage is not published by any job
+  board, so a stage recorded against a company is only ever one that was
+  actually checked, with the source given.
 
 Only the boards are contacted during discovery. Resume content never enters a
 search request.

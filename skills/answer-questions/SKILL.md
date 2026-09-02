@@ -1,6 +1,6 @@
 ---
 name: answer-questions
-description: Draft the free-text answers a job application asks for - "why do you want to work here", "why are you a fit for this role", "tell us about a project you are proud of", "anything else we should know" - grounded strictly in the user's real resume and the job posting, and written so they do not read as AI output. Use whenever the user is filling in an application form and needs the written portions, pastes application questions, asks "how should I answer this", wants a cover-letter box filled, or reaches that stage of apply-to-job after their resume is tailored. Also use for a recruiter's written screening questions. Do NOT use it for a cold outreach email to a company that has not asked anything (that is a different task), and do NOT use it to answer demographic, salary, notice-period, or work-authorization questions, which the skill deliberately hands back to the user.
+description: Draft the free-text answers a job application asks for - "why do you want to work here", "why are you a fit for this role", "tell us about a project you are proud of", "anything else we should know" - grounded strictly in the user's real resume and the job posting, and written so they do not read as AI output. Use whenever the user is filling in an application form and needs the written portions, pastes application questions, asks "how should I answer this", wants a cover-letter box filled, or reaches that stage of apply-to-job after their resume is tailored. Also use for a recruiter's written screening questions. Do NOT use it for a cold outreach email to a company that has not asked anything (that is a different task), and do NOT use it to answer salary, notice-period, or work-authorization questions, which the skill deliberately hands back to the user.
 ---
 
 # answer-questions
@@ -25,6 +25,7 @@ Read whatever exists in the scratchpad. Each one makes the answers sharper:
 | `jd-brief.md` | what the company says it wants, in its own words |
 | `fit-report.md` | the honest gaps, which are answer material, not shameful |
 | `job-leads.md` | company context if discovery ran |
+| `resume/profile.json` | self-identification answers the user recorded once, if the file exists |
 
 If the questions came from a form the user is looking at, ask them to paste the
 questions verbatim, along with any word or character limits. Limits are not
@@ -79,7 +80,11 @@ decoration; an answer truncated mid-sentence by the form reads as carelessness.
 The kit refuses these on purpose, and says so rather than guessing:
 
 - **Demographic, EEO, gender, race, disability, veteran status.** Personal
-  disclosures with legal weight. Leave every one blank for the user.
+  disclosures with legal weight, so they are never inferred. The one exception
+  is a value the user has already recorded in `resume/profile.json`: they answer
+  these once there rather than on every application, and the stored answer is
+  reported as coming from the profile so they can see what will be submitted.
+  Anything not in that file, or no file at all, is handed back blank.
 - **Salary expectations and current compensation.** A negotiating position, not a
   fact to be looked up, and in several jurisdictions the employer may not ask.
 - **Notice period, start date, work authorization, visa status, relocation.**
@@ -106,5 +111,7 @@ Full rationale in [`GUARDRAILS.md`](../../GUARDRAILS.md).
 - **Personal data stays local.** Answers are written to the scratchpad or the
   git-ignored `applications/` folder. Resume content is never sent to the web;
   company research reads public pages only and never carries user data with it.
-- **Personal disclosures belong to the user.** Demographic, compensation,
-  authorization, and availability questions are handed back, not guessed.
+- **Personal disclosures belong to the user.** Compensation, authorization and
+  availability questions are handed back, not guessed. Self-identification
+  answers are reported only from `resume/profile.json`, never inferred from a
+  name, a location, or the resume.

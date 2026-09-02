@@ -22,14 +22,14 @@ you can run the whole thing or any single step.
 
 | Skill | What it does |
 |---|---|
-| `find-jobs` | Searches company ATS boards (Greenhouse, Lever, Ashby, Workable, Workday) directly for live openings, filtered on location, title, stack, and the years of experience the posting actually states. Use it when you do not have a specific posting yet. |
+| `find-jobs` | Searches company ATS boards (Greenhouse, Lever, Ashby, Workable, Workday) directly for live openings, filtered on location, title, stack, and the years of experience the posting actually states. Casts beyond its bundled company list via Workable's cross-company index, and grows that list with every company it resolves. Use it when you do not have a specific posting yet. |
 | `ingest-resume` | Takes your own resume file (`.tex` or `.docx`) as the working master in your own template, and checks it has the sections a software-engineering resume needs. Polishes an existing resume; never authors one or invents missing sections. |
 | `extract-jd` | Fetches a job URL (or takes pasted text) and normalizes it into a structured brief: role, seniority, must-haves, and verbatim ATS keywords. |
 | `resume-fit-report` | Read-only. Scores how well your master resume matches the JD and separates presentation gaps (fixable) from genuine gaps (never invented). |
 | `tailor-resume` | Copies your master `.tex` to the scratchpad and applies faithful edits in the resume's own template: reorders and rephrases to hit the JD's keywords, surfaces reserve bullets, trims to one page. |
 | `render-resume` | Compiles the tailored `.tex` to PDF with `latexmk` (falling back to tectonic or pdflatex) and enforces the one-page rule. |
-| `answer-questions` | Drafts the free-text parts of an application ("why us", "why you", "a project you are proud of") from your real resume and the posting, then hands back the questions only you can answer: demographic fields, salary, notice period, work authorization. |
-| `submit-application` | Fills the application form from the tailored PDF and your drafted answers, then stops at the submit button for your confirmation. Skips portals that need an account (Workday and similar), never solves a CAPTCHA, and leaves demographic and salary fields for you. |
+| `answer-questions` | Drafts the free-text parts of an application ("why us", "why you", "a project you are proud of") from your real resume and the posting, then hands back the questions only you can answer: salary, notice period, work authorization. Self-identification answers come from `resume/profile.json` if you recorded them, and are left blank if you did not. |
+| `submit-application` | Fills the application form from the tailored PDF and your drafted answers, then stops at the submit button for your confirmation. Skips portals that need an account (Workday and similar), never solves a CAPTCHA, and leaves salary and availability fields for you. |
 | `find-and-apply` | The whole hunt in one command: search, score every lead against your resume, show you a ranked shortlist, then tailor, render, answer and prepare each application you pick. |
 | `apply-to-job` | Single-job orchestrator. Runs the stages in order and pauses for your review before rendering. |
 
@@ -96,6 +96,30 @@ checkout as a marketplace instead:
 3. Optional: mark reserve bullets. Any commented-out bullet line is treated as a
    real, pre-approved accomplishment held in reserve that tailoring may swap in
    when a job makes it more relevant.
+4. Optional: answer the self-identification questions once. Every form asks the
+   same voluntary EEO questions (gender, race and ethnicity, disability, veteran
+   status), and the answers do not change between applications. Record them in
+   `resume/profile.json` and form filling stops asking:
+
+   ```json
+   {
+     "self_identification": {
+       "gender": "...",
+       "race_ethnicity": "...",
+       "hispanic_or_latino": "...",
+       "disability": "...",
+       "veteran_status": "..."
+     }
+   }
+   ```
+
+   `resume/` is git-ignored, so this stays on your machine. Any field you leave
+   out, and the whole file if you skip this, means that question is left blank on
+   the form for you to handle. These values are never inferred from your name,
+   your location, or your resume, and every one that gets filled shows up in the
+   pre-submit manifest. Salary, notice period and work authorization stay out of
+   the file on purpose: they are negotiable or offer-specific, so a stored answer
+   would be wrong more often than right.
 
 ## Usage
 
@@ -140,20 +164,41 @@ That returns a ranked shortlist of live openings with real apply links, plus an
 honest note on which companies were scanned and came up empty and which could not
 be scanned at all. Feed any lead straight into `/apply-to-job`.
 
-The search script also runs standalone, without Claude:
+The search script also runs standalone, without Claude, in three modes:
 
 ```
-python3 skills/find-jobs/scripts/ats_search.py probe --slugs acme,acmeinc,globex
+# 1. discover: no company list at all, finds employers nobody curated
+python3 skills/find-jobs/scripts/ats_search.py discover \
+  --query 'backend engineer' --location india \
+  --title 'backend|platform' --stack 'go,kubernetes' \
+  --companies skills/find-jobs/references/companies.json --markdown leads.md
+
+# 2. probe: resolve company names to boards and keep what it finds
+python3 skills/find-jobs/scripts/ats_search.py probe \
+  --names 'Proximity Works, Fortanix' --stage series-b \
+  --append skills/find-jobs/references/companies.json
+
+# 3. search: the curated list, filtered hard
 python3 skills/find-jobs/scripts/ats_search.py search \
   --companies skills/find-jobs/references/companies.json \
   --location 'berlin|remote' --title 'backend|platform' \
-  --exclude 'manager|intern' --stack 'rust,postgres' --markdown leads.md
+  --exclude 'manager|intern' --stack 'rust,postgres' \
+  --stage 'series-[abc]' --markdown leads.md
 ```
 
-`probe` resolves which board a company slug lives on, since slugs frequently do
-not match the company name. Verified slugs live in
-`skills/find-jobs/references/companies.json`; adding to it makes later runs
-faster.
+`discover` queries Workable's public cross-company job index, so it reaches
+companies that are not in any list. That is also its limit: Greenhouse, Lever and
+Ashby expose per-board endpoints and no index of boards, so reaching a company on
+those still means knowing its slug.
+
+`probe` resolves a company name to its board by guessing the plausible slug forms
+and seeing which exist, since slugs frequently do not match the company name
+(`Harness` is `harnessinc`, `Temporal` is `temporaltechnologies`). With
+`--append` it merges what it verified into
+`skills/find-jobs/references/companies.json`, with the date and an optional
+funding stage, so the list grows as you use it rather than by hand. No ATS
+publishes funding stage, so `--stage` records what you tell it and nothing more;
+`search --stage` then narrows a run to those companies.
 
 ## Roadmap
 

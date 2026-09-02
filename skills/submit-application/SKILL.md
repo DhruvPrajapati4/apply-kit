@@ -55,7 +55,8 @@ Build a table of every field and exactly what will go in it, sourced:
 | Email | ... | master resume |
 | Resume file | `tailored.pdf` | this run |
 | Why this company | first 40 characters... | `answers.md` |
-| Gender / EEO | *left blank* | user only |
+| Gender / EEO | Male, Asian, no disability... | `resume/profile.json` |
+| Salary expectation | *left blank* | user only |
 
 Show it and ask for a clear yes. Typing the user's personal details into a third
 party's form is itself an action they should authorize knowingly, which is why
@@ -69,10 +70,18 @@ rather than composing a plausible value on the spot.
 
 Drive the form with the browser tools. While filling:
 
-- **Leave every personal-disclosure field blank**: gender, race, ethnicity,
-  disability, veteran status, salary expectation, notice period, work
-  authorization, sponsorship, relocation. These are the user's to complete, and
-  `answer-questions` already handed them back with reasons.
+- **Voluntary self-identification comes from `resume/profile.json`**, if that
+  file exists: gender, race and ethnicity, disability, veteran status. These
+  questions are identical on every form and the answers do not change, so the
+  user records them once rather than on every application. Map the stored value
+  onto whichever option the form actually offers, and if there is no clean
+  match, leave the field blank and say so in the report. A field absent from the
+  profile stays blank. No profile file means every one of them stays blank.
+- **Leave the rest of the personal-disclosure fields blank**: salary
+  expectation, notice period, work authorization, sponsorship, relocation. These
+  are negotiable or offer-specific rather than fixed facts, so they stay the
+  user's to complete, and `answer-questions` already handed them back with
+  reasons.
 - **Never enter a password, a government ID, a bank or card number, or a national
   identity number.** No application legitimately needs the last three at this
   stage, and a form that demands them is worth flagging to the user as suspicious.
@@ -127,9 +136,11 @@ Full rationale in [`GUARDRAILS.md`](../../GUARDRAILS.md).
 - **Never create an account or enter a password.** Portals requiring one are
   handed back to the user, always.
 - **Never solve a CAPTCHA or any other bot check.**
-- **Never enter personal-disclosure, financial, or government-ID data.**
-  Demographic, salary, authorization and availability fields stay blank; identity
-  and payment numbers are never entered at all.
+- **Never enter financial or government-ID data.** Identity and payment numbers
+  are never entered at all. Salary, authorization and availability fields stay
+  blank. Self-identification fields are filled only from `resume/profile.json`,
+  only with values the user recorded there, and never guessed from a name, a
+  location, or anything in the resume.
 - **Never accept terms or consent on the user's behalf.**
 - **Never fabricate a field value.** If a required field has no source in the
   resume, `answers.md`, or the conversation, ask.

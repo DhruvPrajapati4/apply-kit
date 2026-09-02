@@ -137,7 +137,7 @@ Never answered, always returned to the user with a one-line reason:
 
 | Question | Why it is theirs |
 |---|---|
-| Gender, race, ethnicity, disability, veteran status | Personal disclosures with legal weight. Leave blank. |
+| Gender, race, ethnicity, disability, veteran status | Personal disclosures with legal weight. Never inferred. Filled only from a value the user recorded in `resume/profile.json`, otherwise left blank. |
 | Salary expectation, current compensation | A negotiating position, not a fact. In several jurisdictions the employer may not ask at all. |
 | Notice period, earliest start date | Only the user knows, and a wrong answer is binding. |
 | Work authorization, visa status, sponsorship needed | A legal fact about the user. A guess can invalidate the application. |
