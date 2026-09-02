@@ -29,8 +29,8 @@ you can run the whole thing or any single step.
 | `resume-fit-report` | Read-only. Scores how well your master resume matches the JD and separates presentation gaps (fixable) from genuine gaps (never invented). |
 | `tailor-resume` | Copies your master `.tex` to the scratchpad and applies faithful edits in the resume's own template: reorders and rephrases to hit the JD's keywords, surfaces reserve bullets, trims to one page. |
 | `render-resume` | Compiles the tailored `.tex` to PDF with `latexmk` (falling back to tectonic or pdflatex) and enforces the one-page rule. |
-| `answer-questions` | Drafts the free-text parts of an application ("why us", "why you", "a project you are proud of") from your real resume and the posting, then hands back the questions only you can answer: salary, notice period, work authorization. Self-identification answers come from `resume/profile.json` if you recorded them, and are left blank if you did not. |
-| `submit-application` | Fills the application form from the tailored PDF and your drafted answers, then stops at the submit button for your confirmation. Skips portals that need an account (Workday and similar), never solves a CAPTCHA, and leaves salary and availability fields for you. |
+| `answer-questions` | Drafts the free-text parts of an application ("why us", "why you", "a project you are proud of") from your real resume and the posting, then hands back the questions only you can answer: salary, work authorization, relocation. Self-identification answers and your notice period are asked once and remembered, so later applications stop asking. |
+| `submit-application` | Fills the application form from the tailored PDF and your drafted answers, then stops at the submit button for your confirmation. Skips portals that need an account (Workday and similar), never solves a CAPTCHA, and leaves salary and authorization fields for you. |
 | `find-and-apply` | The whole hunt in one command: search, score every lead against your resume, show you a ranked shortlist, then tailor, render, answer and prepare each application you pick. |
 | `apply-to-job` | Single-job orchestrator. Runs the stages in order and pauses for your review before rendering. |
 
@@ -102,30 +102,24 @@ checkout as a marketplace instead:
 3. Optional: mark reserve bullets. Any commented-out bullet line is treated as a
    real, pre-approved accomplishment held in reserve that tailoring may swap in
    when a job makes it more relevant.
-4. Optional: answer the self-identification questions once. Every form asks the
-   same voluntary EEO questions (gender, race and ethnicity, disability, veteran
-   status), and the answers do not change between applications. Record them in
-   `resume/profile.json` and form filling stops asking:
+4. Nothing to set up for the repeat questions. Every form asks the same
+   voluntary EEO questions (gender, race and ethnicity, disability, veteran
+   status) plus your notice period, and none of those answers change between
+   applications. The first application asks you; after that they are remembered
+   in Claude's local memory on your machine and filled for you.
 
-   ```json
-   {
-     "self_identification": {
-       "gender": "...",
-       "race_ethnicity": "...",
-       "hispanic_or_latino": "...",
-       "disability": "...",
-       "veteran_status": "..."
-     }
-   }
-   ```
+   They are kept in memory rather than in a file in your resume project on
+   purpose. Personal data in a tracked file gets committed eventually, however
+   good the ignore rules are. Nothing is inferred from your name, your location,
+   or your resume; anything you have not answered stays blank on the form; and
+   every value that does get filled appears in the pre-submit manifest for you to
+   check. An earliest start date is derived from your notice period rather than
+   remembered, and shown to you as derived.
 
-   `resume/` is git-ignored, so this stays on your machine. Any field you leave
-   out, and the whole file if you skip this, means that question is left blank on
-   the form for you to handle. These values are never inferred from your name,
-   your location, or your resume, and every one that gets filled shows up in the
-   pre-submit manifest. Salary, notice period and work authorization stay out of
-   the file on purpose: they are negotiable or offer-specific, so a stored answer
-   would be wrong more often than right.
+   Salary and work authorization are deliberately never remembered. They are
+   negotiating positions or facts that change with the offer, so a stored answer
+   would be wrong more often than right. Say "forget my notice period" (or any
+   other one) to clear it.
 
 ## Usage
 
@@ -223,8 +217,8 @@ publishes funding stage, so `--stage` records what you tell it and nothing more;
 
 Already shipped: a one-command search-to-application run; job discovery straight
 from company ATS boards, including a listless cross-company search and a company
-list that grows itself; voluntary self-identification answers recorded once
-instead of per application; grounded
+list that grows itself; voluntary self-identification answers and notice period
+remembered instead of asked per application; grounded
 free-text answers for application forms; gated form filling that stops at the
 submit button; installable
 plugin with a marketplace entry; a scoped subagent per pipeline stage; generic `.tex`/`.docx` resume input with a software-engineering

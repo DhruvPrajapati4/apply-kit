@@ -45,13 +45,14 @@ The kit treats it as private:
   `resume/` and `applications/` are git-ignored precisely so private data cannot
   leak into version control.
 - Your contact details are not echoed into unrelated outputs.
-- `resume/profile.json`, if you create one, holds the voluntary
-  self-identification answers you would otherwise retype on every form (gender,
-  race and ethnicity, disability, veteran status). It is git-ignored like the
-  rest of `resume/`, it is read only to fill a form you are about to approve, and
-  it is never included in a web fetch, a search query, a commit, or a report to
-  anyone but you. Delete a line, or the file, and the kit goes back to leaving
-  that field blank.
+- The answers you would otherwise retype on every form (voluntary
+  self-identification, notice period) are asked once and kept in Claude's local
+  memory for your machine, deliberately not in a file inside this repository.
+  Personal data in a tracked file gets committed eventually, however careful the
+  ignore rules are. Those answers are read only to fill a form you are about to
+  approve, and are never included in a web fetch, a search query, a commit, or a
+  report to anyone but you. Tell Claude to forget one and the kit goes back to
+  leaving that field blank.
 
 ## 4. Some questions are yours, not the assistant's
 
@@ -62,15 +63,22 @@ guess is either meaningless or actively harmful:
 - **Demographic and EEO fields** (gender, race, disability, veteran status) are
   personal disclosures with legal weight, so they are never inferred: not from
   your name, your location, or anything in your resume. They are filled only
-  from a value you recorded yourself in `resume/profile.json`, and left blank
-  otherwise. Recording them there is you answering once instead of forty times,
-  not the kit deciding on your behalf, and every filled value still appears in
-  the pre-submit manifest for you to check.
+  from an answer you gave yourself, and left blank otherwise. Being asked once
+  and remembered is you answering once instead of forty times, not the kit
+  deciding on your behalf, and every filled value still appears in the
+  pre-submit manifest for you to check.
 - **Salary expectations and current compensation** are a negotiating position,
   not a fact to be looked up, and in several jurisdictions an employer may not
   ask at all.
-- **Notice period, start date, work authorization, visa status, relocation** are
-  facts only you hold, and a wrong answer can invalidate an application.
+- **Work authorization, visa status, relocation** are facts only you hold or
+  life decisions, and a wrong answer can invalidate an application.
+- **Notice period and start date** are handed back until you have given the
+  notice period once. It is a contractual fact rather than a negotiating
+  position, so remembering it is safe in a way remembering a salary figure is
+  not. A start date is then derived from it (submission date plus the period)
+  and shown to you as derived rather than entered silently. Whether the period
+  can be shortened stays yours: the kit never offers a buyout or an early
+  release on your behalf.
 - **Behavioral questions** ("a time you disagreed with a teammate") describe
   events that are not in your resume. The kit asks you for what happened and
   helps you shape it; it never authors the event. Writing feels like a style task

@@ -55,7 +55,9 @@ Build a table of every field and exactly what will go in it, sourced:
 | Email | ... | master resume |
 | Resume file | `tailored.pdf` | this run |
 | Why this company | first 40 characters... | `answers.md` |
-| Gender / EEO | Male, Asian, no disability... | `resume/profile.json` |
+| Gender / EEO | *as recorded* | the user's stored answers |
+| Notice period | *as recorded* | the user's stored answers |
+| Earliest start date | *derived* | submission date plus notice period |
 | Salary expectation | *left blank* | user only |
 
 Show it and ask for a clear yes. Typing the user's personal details into a third
@@ -70,17 +72,27 @@ rather than composing a plausible value on the spot.
 
 Drive the form with the browser tools. While filling:
 
-- **Voluntary self-identification comes from `resume/profile.json`**, if that
-  file exists: gender, race and ethnicity, disability, veteran status. These
-  questions are identical on every form and the answers do not change, so the
-  user records them once rather than on every application. Map the stored value
-  onto whichever option the form actually offers, and if there is no clean
-  match, leave the field blank and say so in the report. A field absent from the
-  profile stays blank. No profile file means every one of them stays blank.
+- **The repeat answers come from what the user has already told Claude**: the
+  voluntary self-identification fields (gender, race and ethnicity, disability,
+  veteran status) and the notice period. These are identical on every form and
+  the answers do not change, so they are asked once and remembered, not asked
+  per application. Map the remembered value onto whichever option the form
+  actually offers, and if there is no clean match, leave the field blank and say
+  so in the report.
+- **Ask once, then remember.** If one of those answers is not already known, ask
+  the user for it, note that it will be reused, and save it to Claude's memory
+  for this project so the next application does not ask again. Never store it in
+  a file inside a repository, which is how personal data ends up committed.
+- **Anything still unknown stays blank.** A field with no remembered answer is
+  left empty and reported, never guessed.
+- **An earliest start date is derived, not remembered**: submission date plus the
+  notice period. Show the derived date in the manifest so the user can correct it
+  before it is filled. Never enter a date the user has not seen, and never
+  volunteer that the notice period could be shortened unless they said it could.
 - **Leave the rest of the personal-disclosure fields blank**: salary
-  expectation, notice period, work authorization, sponsorship, relocation. These
-  are negotiable or offer-specific rather than fixed facts, so they stay the
-  user's to complete, and `answer-questions` already handed them back with
+  expectation, work authorization, sponsorship, relocation. These are
+  negotiating positions or life decisions rather than fixed facts, so they stay
+  the user's to complete, and `answer-questions` already handed them back with
   reasons.
 - **Never enter a password, a government ID, a bank or card number, or a national
   identity number.** No application legitimately needs the last three at this
@@ -137,10 +149,11 @@ Full rationale in [`GUARDRAILS.md`](../../GUARDRAILS.md).
   handed back to the user, always.
 - **Never solve a CAPTCHA or any other bot check.**
 - **Never enter financial or government-ID data.** Identity and payment numbers
-  are never entered at all. Salary, authorization and availability fields stay
-  blank. Self-identification fields are filled only from `resume/profile.json`,
-  only with values the user recorded there, and never guessed from a name, a
-  location, or anything in the resume.
+  are never entered at all. Salary, authorization and relocation fields stay
+  blank. Self-identification and notice-period fields are filled only from
+  answers the user gave for this purpose, and never guessed from a name, a
+  location, or anything in the resume. A start date derived from the notice
+  period is shown for approval before it is entered.
 - **Never accept terms or consent on the user's behalf.**
 - **Never fabricate a field value.** If a required field has no source in the
   resume, `answers.md`, or the conversation, ask.

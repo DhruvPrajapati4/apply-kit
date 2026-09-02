@@ -1,6 +1,6 @@
 ---
 name: answer-questions
-description: Draft the free-text answers a job application asks for - "why do you want to work here", "why are you a fit for this role", "tell us about a project you are proud of", "anything else we should know" - grounded strictly in the user's real resume and the job posting, and written so they do not read as AI output. Use whenever the user is filling in an application form and needs the written portions, pastes application questions, asks "how should I answer this", wants a cover-letter box filled, or reaches that stage of apply-to-job after their resume is tailored. Also use for a recruiter's written screening questions. Do NOT use it for a cold outreach email to a company that has not asked anything (that is a different task), and do NOT use it to answer salary, notice-period, or work-authorization questions, which the skill deliberately hands back to the user.
+description: Draft the free-text answers a job application asks for - "why do you want to work here", "why are you a fit for this role", "tell us about a project you are proud of", "anything else we should know" - grounded strictly in the user's real resume and the job posting, and written so they do not read as AI output. Use whenever the user is filling in an application form and needs the written portions, pastes application questions, asks "how should I answer this", wants a cover-letter box filled, or reaches that stage of apply-to-job after their resume is tailored. Also use for a recruiter's written screening questions. Do NOT use it for a cold outreach email to a company that has not asked anything (that is a different task), and do NOT use it to answer salary or work-authorization questions, which the skill deliberately hands back to the user.
 ---
 
 # answer-questions
@@ -25,7 +25,10 @@ Read whatever exists in the scratchpad. Each one makes the answers sharper:
 | `jd-brief.md` | what the company says it wants, in its own words |
 | `fit-report.md` | the honest gaps, which are answer material, not shameful |
 | `job-leads.md` | company context if discovery ran |
-| `resume/profile.json` | self-identification answers the user recorded once, if the file exists |
+
+One input is not a file: the repeat answers the user has already given once
+(self-identification, notice period) are remembered across sessions rather than
+stored in the project, so check what is already known before asking again.
 
 If the questions came from a form the user is looking at, ask them to paste the
 questions verbatim, along with any word or character limits. Limits are not
@@ -81,14 +84,20 @@ The kit refuses these on purpose, and says so rather than guessing:
 
 - **Demographic, EEO, gender, race, disability, veteran status.** Personal
   disclosures with legal weight, so they are never inferred. The one exception
-  is a value the user has already recorded in `resume/profile.json`: they answer
-  these once there rather than on every application, and the stored answer is
-  reported as coming from the profile so they can see what will be submitted.
-  Anything not in that file, or no file at all, is handed back blank.
+  is an answer the user has already given for this purpose: they answer these
+  once and Claude remembers them rather than asking on every application. Report
+  such an answer as remembered, so they can see what will be submitted. Anything
+  not already answered is handed back blank, and if they do answer it now, save
+  it to memory rather than asking again next time.
 - **Salary expectations and current compensation.** A negotiating position, not a
   fact to be looked up, and in several jurisdictions the employer may not ask.
-- **Notice period, start date, work authorization, visa status, relocation.**
-  Facts only the user holds. A guess here can invalidate an application.
+- **Work authorization, visa status, relocation.** Facts only the user holds, or
+  life decisions. A guess here can invalidate an application.
+- **Notice period and start date**, unless the notice period is already known
+  from what the user told Claude. If it is, report it as remembered and give the
+  start date as submission date plus that period, marked as derived so the user
+  checks it. Whether the period could be shortened is still theirs to answer:
+  never offer a buyout or an early release on their behalf.
 - **Behavioral questions with no resume basis** ("describe a conflict with a
   teammate", "a time you failed"). The resume does not contain these events.
   Ask the user for the story, then help shape it. Never author the event.
@@ -111,7 +120,7 @@ Full rationale in [`GUARDRAILS.md`](../../GUARDRAILS.md).
 - **Personal data stays local.** Answers are written to the scratchpad or the
   git-ignored `applications/` folder. Resume content is never sent to the web;
   company research reads public pages only and never carries user data with it.
-- **Personal disclosures belong to the user.** Compensation, authorization and
-  availability questions are handed back, not guessed. Self-identification
-  answers are reported only from `resume/profile.json`, never inferred from a
-  name, a location, or the resume.
+- **Personal disclosures belong to the user.** Compensation and authorization
+  questions are handed back, not guessed. Self-identification and notice-period
+  answers are reported only from what the user actually said, never inferred
+  from a name, a location, or the resume, and never written into a tracked file.
