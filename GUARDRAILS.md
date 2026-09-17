@@ -168,8 +168,8 @@ layers back them so they hold even if the model is pushed:
      tracking system, so submission cannot be scripted around the confirmation
      gates. Reads of those same hosts are untouched, since discovery depends on
      them;
-   - a PostToolUse hook re-surfaces a one-page violation after rendering so a
-     two-page PDF cannot pass silently.
+   - a PostToolUse hook re-surfaces a page-budget violation after rendering so a
+     PDF longer than your master resume cannot pass silently.
 
    One limit worth stating rather than glossing: a hook inspects tool arguments,
    so it cannot tell that a particular click in a browser is the submit button.

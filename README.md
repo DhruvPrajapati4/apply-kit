@@ -1,7 +1,8 @@
 # apply-kit
 
 A set of [Claude Code](https://claude.com/claude-code) skills that tailor your
-LaTeX resume to a specific job posting, faithfully and on one page.
+LaTeX resume to a specific job posting, faithfully and without outgrowing your
+master resume's own length.
 
 You give Claude a job URL or a pasted job description. apply-kit reads the
 posting, checks how well your resume fits, tailors a copy to mirror the role's
@@ -27,8 +28,8 @@ you can run the whole thing or any single step.
 | `ingest-resume` | Takes your own resume file (`.tex` or `.docx`) as the working master in your own template, and checks it has the sections a software-engineering resume needs. Polishes an existing resume; never authors one or invents missing sections. |
 | `extract-jd` | Fetches a job URL (or takes pasted text) and normalizes it into a structured brief: role, seniority, must-haves, and verbatim ATS keywords. |
 | `resume-fit-report` | Read-only. Scores how well your master resume matches the JD and separates presentation gaps (fixable) from genuine gaps (never invented). |
-| `tailor-resume` | Copies your master `.tex` to the scratchpad and applies faithful edits in the resume's own template: reorders and rephrases to hit the JD's keywords, surfaces reserve bullets, trims to one page. |
-| `render-resume` | Compiles the tailored `.tex` to PDF with `latexmk` (falling back to tectonic or pdflatex) and enforces the one-page rule. |
+| `tailor-resume` | Copies your master `.tex` to the scratchpad and applies faithful edits in the resume's own template: reorders and rephrases to hit the JD's keywords, surfaces reserve bullets, and keeps the result within your master's page budget. Leads with scope and ownership bullets when the posting hires at senior, staff or manager level. |
+| `render-resume` | Compiles the tailored `.tex` to PDF with `latexmk` (falling back to tectonic or pdflatex) and enforces the page budget. |
 | `answer-questions` | Drafts the free-text parts of an application ("why us", "why you", "a project you are proud of") from your real resume and the posting, then hands back the questions only you can answer: salary, work authorization, relocation. Self-identification answers and your notice period are asked once and remembered, so later applications stop asking. |
 | `submit-application` | Fills the application form from the tailored PDF and your drafted answers, then stops at the submit button for your confirmation. Skips portals that need an account (Workday and similar), never solves a CAPTCHA, and leaves salary and authorization fields for you. |
 | `find-and-apply` | The whole hunt in one command: search, score every lead against your resume, show you a ranked shortlist, then tailor, render, answer and prepare each application you pick. |
@@ -44,8 +45,11 @@ git), and the renderer only compiles.
 
 - **Never invent.** Every claim in the output traces to content already in your
   master resume. Genuine gaps are reported to you, never written into the resume.
-- **One page, always.** Length is treated as a fixed budget and the render step
-  fails if the resume spills onto a second page.
+- **Your master sets the length.** Length is a fixed budget, and the budget is your
+  master resume's own page count. A one-page master stays one page; a two- or
+  three-page senior, staff or manager master stays that long. The render step fails
+  if a tailored copy runs longer than the master. It is asked once, when your resume
+  is ingested, and reused for every application after that.
 - **You stay in the loop.** The orchestrator shows you the diff and change log
   before anything is rendered, and nothing is ever submitted without your explicit
   yes for that specific application.
@@ -148,7 +152,7 @@ or paste the description directly:
 ```
 
 Claude will produce a fit report, show you the tailored diff for approval, then
-render a one-page PDF. You can also invoke any single skill on its own, for
+render the PDF. You can also invoke any single skill on its own, for
 example `/resume-fit-report` to just get a gap analysis.
 
 If you do not have a posting in mind yet, start with discovery:
@@ -224,7 +228,7 @@ submit button; installable
 plugin with a marketplace entry; a scoped subagent per pipeline stage; generic `.tex`/`.docx` resume input with a software-engineering
 section-completeness check; bundled `humanize-text` so generated prose ships
 human-clean; and agent-behavior guardrails (prompt-injection resistance, no
-fabrication, private data kept local, no instruction leaking, one-page rule)
+fabrication, private data kept local, no instruction leaking, page budget)
 enforced by tool scoping and hooks. See [`GUARDRAILS.md`](GUARDRAILS.md).
 
 ## License

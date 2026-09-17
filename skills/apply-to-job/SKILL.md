@@ -43,10 +43,10 @@ by hand works too.
 3. **tailor-resume** → `tailored.tex` + change log. **Pause here:** show the diff
    against the working master and the change log, and let the user approve or
    request edits before rendering.
-4. **render-resume** → `tailored.pdf`. If it reports the resume overflowed to more
-   than one page, go back to `tailor-resume`, condense, and re-render until it is
-   exactly one page — the one-page rule is non-negotiable. Then report the path and
-   offer to open it.
+4. **render-resume** → `tailored.pdf`. If it reports the page budget was exceeded,
+   go back to `tailor-resume`, condense, and re-render until it is back within the
+   budget — the budget is the master resume's own page count and it is
+   non-negotiable. Then report the path and offer to open it.
 5. **answer-questions** (only if the application asks for written answers) →
    `answers.md`. Ask the user to paste the form's questions verbatim with any
    length limits. Some questions are deliberately handed back rather than

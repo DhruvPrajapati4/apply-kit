@@ -37,13 +37,21 @@ template, and missing content is reported, never fabricated.
      Open-source, Publications.
    Mark each Present / Thin / Missing. "Thin" means the section exists but is
    sparse (e.g. Skills with one line, Experience with no bullets).
-4. **Report, do not fix.** Missing or thin sections are surfaced to the user as a
+4. **Establish the page budget.** Ask the user once how many pages their master
+   resume is (1, 2 or 3+). apply-kit does not impose a one-page resume: the master
+   sets the length, and tailoring is never allowed to exceed it. Write that number
+   alone to a `.page-budget` file next to the source resume (e.g.
+   `resume/.page-budget`) so it is asked once and reused for every application.
+   `render-resume` reads it; rendering the master itself corrects it to the real
+   count.
+5. **Report, do not fix.** Missing or thin sections are surfaced to the user as a
    heads-up so they can add real content to their own resume. Never invent a
    section or its content to fill a gap.
 
 ## Output
 Write `ingest-report.md` to the scratchpad and report:
-- the working master path (`master.tex`) and the source format;
+- the working master path (`master.tex`), the source format, and the page budget
+  you recorded;
 - the section table (Present / Thin / Missing);
 - any required section that is missing or thin, phrased as a question to the user
   ("Your resume has no Skills section — add one to your source resume if you have

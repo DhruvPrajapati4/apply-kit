@@ -22,9 +22,17 @@ This skill **reads and judges only** — it does not edit LaTeX and never fabric
    - **Latent** — present in the resume but buried, under-emphasized, or only in
      a commented-out reserve bullet (note which). Tailoring can surface it.
    - **Missing** — no evidence anywhere in the resume.
-2. Compute a rough **fit score** (Strong / Moderate / Weak) with one line of
+2. **Read the level.** Compare the `Seniority` line in the brief against what the
+   resume's evidence actually supports: years and trajectory, scope of ownership,
+   design and architecture work, cross-team reach, mentoring, hiring, on-call and
+   incident leadership, team size for a manager role. Say plainly which level the
+   resume reads as, and name the specific leveling gaps ("no people-management
+   evidence", "ownership stops at service level, the JD wants org-wide"). A
+   leveling gap is a genuine gap: tailoring can surface leadership evidence that
+   is already there, it can never create it.
+3. Compute a rough **fit score** (Strong / Moderate / Weak) with one line of
    reasoning. Be honest — this is for the user's decision-making, not a sales pitch.
-3. Separate two very different kinds of gap:
+4. Separate two very different kinds of gap:
    - **Presentation gaps** — the user clearly has it; it's just not surfaced.
      These are fixable by `tailor-resume`.
    - **Genuine gaps** — the resume shows no evidence. **Never** invent these into
@@ -38,6 +46,7 @@ Write `fit-report.md` to the scratchpad:
 ```markdown
 # Fit Report: <Role> @ <Company>
 **Overall fit:** Strong | Moderate | Weak — <one-line reason>
+**Seniority read:** JD hires at <level>; resume reads <level> — <one-line reason>
 
 ## Coverage
 | Requirement / keyword | Status | Evidence in resume |
