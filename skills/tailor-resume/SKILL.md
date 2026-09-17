@@ -1,6 +1,6 @@
 ---
 name: tailor-resume
-description: Produce a faithfully tailored copy of the user's LaTeX resume for a specific job, written to the scratchpad, leaving the master untouched. Use whenever the user wants to tailor, customize, adapt, rework, gear, or update their resume for a particular job, role, or JD — including loose phrasings like "make my resume fit this" or "point my resume at this posting". Works within whatever template the resume already uses (imposes no template of its own): reorders and rephrases existing content to mirror the JD's keywords, surfaces reserve (commented-out) bullets, trims to one page, and never invents skills, metrics, or experience.
+description: Produce a faithfully tailored copy of the user's LaTeX resume for a specific job, written to the scratchpad, leaving the master untouched. Use whenever the user wants to tailor, customize, adapt, rework, gear, or update their resume for a particular job, role, or JD — including loose phrasings like "make my resume fit this" or "point my resume at this posting". Works within whatever template the resume already uses (imposes no template of its own): reorders and rephrases existing content to mirror the JD's keywords, surfaces reserve (commented-out) bullets, keeps the resume within its own page budget, and never invents skills, metrics, or experience.
 ---
 
 # tailor-resume
@@ -25,7 +25,7 @@ commented). You MAY:
 - reorder bullets and skills to lead with JD-relevant items;
 - rephrase existing bullets to mirror the JD's exact terminology/keywords, as long
   as the underlying fact (tech, metric, outcome) is unchanged;
-- drop the least-relevant bullets to preserve one page;
+- drop the least-relevant bullets to stay within the page budget;
 - **uncomment reserve bullets** (any commented-out bullet lines the resume keeps in
   reserve) when the JD makes them more relevant than an active bullet — comment the
   displaced one back out so nothing is lost.
@@ -40,6 +40,23 @@ to "just add it this once." If the user asks you to add something the master
 resume doesn't support, don't. Explain that it belongs in the fit report as a
 genuine gap, and that if the experience is real, the user should add it to their
 master `main.tex` themselves — then it becomes fair game to surface.
+
+## Match the level the JD hires at
+Read the `Seniority` line in `jd-brief.md` and let it decide which of the user's
+real bullets lead. This is ordering and emphasis only; it never changes what the
+resume claims.
+- **Senior / staff / principal / lead / manager:** lead with the bullets that show
+  scope — system ownership, design and architecture decisions, cross-team or
+  cross-org work, mentoring, interviewing and hiring, incident and on-call
+  leadership, migrations you drove. Push purely task-level implementation detail
+  down or out. Keep the numbers that show blast radius (traffic, cost, team size,
+  systems owned) over the ones that only show activity.
+- **Junior / mid:** lead with hands-on delivery — what you built, shipped and
+  debugged, and the stack you did it in.
+- **Never manufacture seniority.** If the master shows no leadership or ownership
+  evidence, a senior JD does not license you to imply any. Rephrasing "fixed a bug"
+  into "owned reliability" is invention. A real leveling gap belongs in the fit
+  report, and if the experience is real the user should add it to their master.
 
 ## Template rules (match the resume's own template)
 apply-kit imposes no template of its own. The user's resume defines its template;
@@ -59,13 +76,15 @@ your job is to edit within it, never to restyle it.
   emphasis to a newly surfaced JD keyword only if the fact is already there and the
   resume already emphasizes similar terms.
 - Escape LaTeX specials in any rephrased text: `& % $ # _ { } ~ ^ \`.
-- **Keep it one page — this is a hard rule.** The master already fills exactly one
-  page, so treat length as a fixed budget: every bullet you surface or lengthen must
-  be paid for by cutting or condensing something else. Never let content spill onto a
-  second page. `render-resume` verifies this after compiling and fails on overflow;
-  if that happens, condense (tighten wording, drop the least-relevant bullet) and
-  re-render until it reports one page. A slightly shorter one-page resume always
-  beats a two-page one.
+- **Never run longer than the master — this is a hard rule.** The page budget is the
+  master's own page count: one page for most resumes, two or three for a senior,
+  staff or manager profile whose master is already that long. apply-kit does not
+  force a one-page resume, and it does not let a tailored copy grow past the master
+  either. Treat length as a fixed budget: every bullet you surface or lengthen must
+  be paid for by cutting or condensing something else. `render-resume` verifies this
+  after compiling and fails on overflow; if that happens, condense (tighten wording,
+  drop the least-relevant bullet) and re-render until it is back within budget.
+  Coming in shorter than the budget is fine and often better; spilling over is not.
 - Keep the skills/technical section intact but reorder within it so JD-relevant
   items lead. Do not add anything that isn't already listed.
 

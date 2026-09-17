@@ -19,12 +19,25 @@ Type1 fonts). `latexmk` (→ pdflatex) renders it **faithfully** and needs no sh
 prefer it. **Tectonic runs XeTeX and does NOT render this resume correctly:** it
 crashes on `fontawesome5`, lacks the pdfTeX ATS primitives, and falls back from
 Roboto to a Computer Modern serif. `render.sh` auto-shims tectonic so it at least
-produces a one-page PDF, but treat that as a rough preview only — the final PDF
+produces a PDF, but treat that as a rough preview only — the final PDF
 the user submits should come from pdflatex/latexmk (or Overleaf). Tell the user
 this if only tectonic is available.
 
+## The page budget
+apply-kit does not force a one-page resume. The budget is the **master resume's own
+page count**, so a two- or three-page senior/staff/manager master stays that long and
+a one-page master stays one page. A tailored copy may come in shorter than the
+budget; it may never come in longer.
+
+Before rendering a tailored resume, read the budget from the `.page-budget` file
+next to the source master (written by `ingest-resume`) and pass it as the script's
+second argument. If that file does not exist, ask the user how many pages their
+master is, write the answer there, then render. Rendering the master itself needs no
+argument: the script measures it and records the real count.
+
 ## Procedure
-1. Run the bundled render script, `"${CLAUDE_SKILL_DIR}/scripts/render.sh" <tex-file>`
+1. Run the bundled render script,
+   `"${CLAUDE_SKILL_DIR}/scripts/render.sh" <tex-file> [page-budget]`
    (when installed as a plugin, `${CLAUDE_SKILL_DIR}` resolves to this skill's
    directory; if that variable is unset, fall back to `scripts/render.sh` relative
    to this skill). It:
@@ -32,8 +45,9 @@ this if only tectonic is available.
      see fidelity note), else `pdflatex`/`xelatex`;
    - for tectonic, compiles a shimmed throwaway copy; other engines use the file as-is;
    - compiles in the file's directory and prints the PDF path;
-   - **enforces the one-page rule**: parses the TeX log for the page count and
-     exits non-zero (code 5) if the resume is more than one page.
+   - **enforces the page budget**: parses the TeX log for the page count and exits
+     non-zero (code 5) if the resume ran longer than the budget. The budget is the
+     second argument, else a `.page-budget` file next to the `.tex`, else 1.
 2. **If no TeX engine is found**, the script exits non-zero with install guidance.
    Relay it: on macOS, `brew install --cask mactex-no-gui` (full, includes
    `latexmk`) or `brew install tectonic` (lightweight, auto-fetches packages).

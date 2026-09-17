@@ -19,7 +19,8 @@ should not run unattended in a context the user is not watching.
 
 Confirm all four. Stop and fix rather than proceeding on a maybe.
 
-1. `tailored.pdf` exists and is exactly one page.
+1. `tailored.pdf` exists and is within the page budget (no longer than the
+   master resume).
 2. The posting is still live. Boards go stale; check before spending the user's
    time filling a form for a closed role.
 3. If the application asks written questions, `answers.md` exists and the user has

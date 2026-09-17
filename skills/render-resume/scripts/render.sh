@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Compile a LaTeX resume to PDF and enforce the one-page rule.
+# Compile a LaTeX resume to PDF and enforce the page budget (the master resume's
+# own page count, so a two-page senior resume is fine and a bloated one is not).
 # Prefers latexmk (pdflatex), then tectonic, then a raw engine.
 #
 # The resume is authored for pdfLaTeX. Tectonic runs XeTeX, which (a) lacks the
@@ -8,7 +9,7 @@
 # throwaway copy (fontawesome5 -> fontawesome v4, ATS glyph lines commented) and
 # emit the PDF under the original name. pdflatex/latexmk need no shim.
 #
-# Usage: render.sh <path-to.tex>
+# Usage: render.sh <path-to.tex> [page-budget]
 set -euo pipefail
 
 TEX="${1:-}"
@@ -79,20 +80,37 @@ if [[ ! -f "$BASE.pdf" ]]; then
 fi
 echo ">> built: $DIR/$BASE.pdf"
 
-# --- One-page guard -------------------------------------------------------
+# --- Page-budget guard ----------------------------------------------------
+# The resume may be longer than one page for senior/staff/manager profiles, so
+# the budget is the master resume's own page count, not a hardcoded 1.
+# Budget resolution: $2, else a .page-budget file next to the .tex, else 1.
 # The TeX log reports "Output written on <file> (N page[s], ...)".
 PAGES=""
 if [[ -n "$LOG" && -f "$LOG" ]]; then
   PAGES="$(grep -oE 'Output written on [^(]*\(([0-9]+) page' "$LOG" | grep -oE '[0-9]+ page' | grep -oE '[0-9]+' | tail -1 || true)"
 fi
 
+BUDGET="${2:-}"
+if [[ -z "$BUDGET" && -f "$DIR/.page-budget" ]]; then
+  BUDGET="$(tr -cd '0-9' < "$DIR/.page-budget")"
+fi
+[[ "$BUDGET" =~ ^[1-9][0-9]*$ ]] || BUDGET=1
+
+# Rendering the master itself measures the budget rather than spending it: record
+# the real count so a stale hand-entered number can't authorize a longer resume.
+if [[ -n "$PAGES" ]] && [[ "$BASE" == "master" || "$BASE" == "main" ]]; then
+  echo "$PAGES" > "$DIR/.page-budget"
+  echo ">> pages: $PAGES  (master) — page budget recorded in $DIR/.page-budget"
+  exit 0
+fi
+
 if [[ -z "$PAGES" ]]; then
-  echo ">> pages: unknown (couldn't parse $LOG) — verify manually that it's one page" >&2
-elif [[ "$PAGES" -eq 1 ]]; then
-  echo ">> pages: 1  ✓ one-page rule satisfied"
+  echo ">> pages: unknown (couldn't parse $LOG) — verify manually that it fits $BUDGET page(s)" >&2
+elif [[ "$PAGES" -le "$BUDGET" ]]; then
+  echo ">> pages: $PAGES of $BUDGET  ✓ within page budget"
 else
   echo "" >&2
-  echo "!! ONE-PAGE RULE VIOLATED: resume rendered to $PAGES pages." >&2
+  echo "!! PAGE BUDGET EXCEEDED: rendered $PAGES pages, budget $BUDGET." >&2
   echo "!! Trim/condense content and re-render before using this PDF." >&2
   exit 5
 fi

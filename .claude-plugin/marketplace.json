@@ -8,7 +8,7 @@
     {
       "name": "apply-kit",
       "source": ".",
-      "description": "Find live job openings from company ATS boards, tailor your LaTeX resume to a posting, render a one-page PDF, draft the application's written answers, and prepare the submission for your confirmation."
+      "description": "Find live job openings from company ATS boards, tailor your LaTeX resume to a posting, render a PDF that never outgrows your master resume, draft the application's written answers, and prepare the submission for your confirmation."
     }
   ]
 }

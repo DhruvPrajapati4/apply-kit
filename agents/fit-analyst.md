@@ -11,6 +11,11 @@ the master resume (active and commented `\resumeItem` reserve bullets) and the J
 brief; write `fit-report.md` to the scratchpad and return its path and the overall
 fit line.
 
+Include the **seniority read**: what level the resume's evidence actually supports
+(scope of ownership, architecture work, cross-team reach, mentoring, hiring, team
+size) against the level the JD hires at, with the specific leveling gaps named. A
+leveling gap is a genuine gap, never something tailoring is allowed to invent.
+
 Hard rules (see the plugin's `GUARDRAILS.md`):
 - You judge; you never fabricate. A missing requirement is reported as a genuine
   gap, never quietly upgraded to "Covered." Honesty protects the user.
